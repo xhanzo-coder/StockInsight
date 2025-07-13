@@ -1,0 +1,205 @@
+2025-07-11 14:44:37,735 - database - INFO - 数据库初始化完成
+2025-07-11 14:44:37,735 - app - INFO - 数据库初始化完成
+2025-07-11 14:44:37,735 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 14:44:37,738 - database - INFO - 数据库初始化完成
+2025-07-11 14:44:37,738 - app - INFO - 数据库初始化完成
+2025-07-11 14:44:37,738 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 14:44:37,751 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.31.103:5000
+2025-07-11 14:44:37,751 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-11 14:44:37,752 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 14:44:38,954 - database - INFO - 数据库初始化完成
+2025-07-11 14:44:38,954 - app - INFO - 数据库初始化完成
+2025-07-11 14:44:38,954 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 14:44:38,958 - database - INFO - 数据库初始化完成
+2025-07-11 14:44:38,958 - app - INFO - 数据库初始化完成
+2025-07-11 14:44:38,958 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 14:44:38,965 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 14:44:38,967 - werkzeug - INFO -  * Debugger PIN: 992-224-397
+2025-07-11 14:44:43,298 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:44:43,459 - stock_service - WARNING - 网络搜索股票失败: 江苏银行, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟搜索
+2025-07-11 14:44:43,459 - stock_service - INFO - 模拟搜索股票: 江苏银行, 找到 1 个结果
+2025-07-11 14:44:43,563 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:44:43] "GET /api/stocks/search?keyword=江苏银行 HTTP/1.1" 200 -
+2025-07-11 14:44:57,803 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:44:57,994 - stock_service - WARNING - 网络搜索股票失败: 中国石油, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟搜索
+2025-07-11 14:44:57,994 - stock_service - INFO - 模拟搜索股票: 中国石油, 找到 0 个结果
+2025-07-11 14:44:58,142 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:44:58] "GET /api/stocks/search?keyword=中国石油 HTTP/1.1" 200 -
+2025-07-11 14:45:47,375 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:45:47,562 - stock_service - WARNING - 网络获取股票数据失败: 000001, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟数据
+2025-07-11 14:45:47,563 - stock_service - INFO - 返回模拟股票数据: 000001
+2025-07-11 14:45:47,563 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:45:47,693 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:47] "[33mGET /manifest.json HTTP/1.1[0m" 404 -
+2025-07-11 14:45:47,750 - stock_service - WARNING - 网络获取股票数据失败: 601318, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟数据
+2025-07-11 14:45:47,750 - stock_service - INFO - 返回模拟股票数据: 601318
+2025-07-11 14:45:47,844 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:47] "GET /api/watchlist HTTP/1.1" 200 -
+2025-07-11 14:45:47,953 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:47] "GET /api/watchlist HTTP/1.1" 200 -
+2025-07-11 14:45:48,061 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:48] "GET /api/stats?hours=24 HTTP/1.1" 200 -
+2025-07-11 14:45:48,538 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:48] "GET /api/stats?hours=24 HTTP/1.1" 200 -
+2025-07-11 14:45:48,850 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:48] "[33mGET /manifest.json HTTP/1.1[0m" 404 -
+2025-07-11 14:45:48,901 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:48] "GET /api/watchlist HTTP/1.1" 200 -
+2025-07-11 14:45:49,081 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:49] "GET /api/watchlist HTTP/1.1" 200 -
+2025-07-11 14:45:49,428 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:49] "GET /api/stats?hours=24 HTTP/1.1" 200 -
+2025-07-11 14:45:49,849 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:49] "GET /api/stats?hours=24 HTTP/1.1" 200 -
+2025-07-11 14:45:56,111 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:45:56,298 - stock_service - WARNING - 网络搜索股票失败: 江苏, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟搜索
+2025-07-11 14:45:56,299 - stock_service - INFO - 模拟搜索股票: 江苏, 找到 1 个结果
+2025-07-11 14:45:56,400 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:56] "GET /api/stocks/search?keyword=江苏&limit=10 HTTP/1.1" 200 -
+2025-07-11 14:45:58,391 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:45:58,553 - stock_service - WARNING - 网络获取股票数据失败: 600919, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟数据
+2025-07-11 14:45:58,656 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:45:58] "[33mPOST /api/watchlist HTTP/1.1[0m" 404 -
+2025-07-11 14:46:17,848 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:46:17] "GET /api/stocks/search?keyword=江苏银行 HTTP/1.1" 200 -
+2025-07-11 14:48:40,516 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:48:40,740 - urllib3.connectionpool - DEBUG - https://82.push2.eastmoney.com:443 "GET /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 HTTP/1.1" 200 10930
+2025-07-11 14:48:40,748 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:48:40,909 - stock_service - WARNING - 网络搜索股票失败: jiangs, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=2&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟搜索
+2025-07-11 14:48:40,909 - stock_service - INFO - 模拟搜索股票: jiangs, 找到 0 个结果
+2025-07-11 14:48:41,036 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:48:41] "GET /api/stocks/search?keyword=jiangs&limit=10 HTTP/1.1" 200 -
+2025-07-11 14:48:43,239 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:48:43,407 - stock_service - WARNING - 网络搜索股票失败: 江苏yi'nan'b'g, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟搜索
+2025-07-11 14:48:43,408 - stock_service - INFO - 模拟搜索股票: 江苏yi'nan'b'g, 找到 0 个结果
+2025-07-11 14:48:43,508 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:48:43] "GET /api/stocks/search?keyword=江苏yi'nan'b'g&limit=10 HTTP/1.1" 200 -
+2025-07-11 14:48:44,327 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:48:44,514 - stock_service - WARNING - 网络搜索股票失败: 江苏yi, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟搜索
+2025-07-11 14:48:44,514 - stock_service - INFO - 模拟搜索股票: 江苏yi, 找到 0 个结果
+2025-07-11 14:48:44,612 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:48:44] "GET /api/stocks/search?keyword=江苏yi&limit=10 HTTP/1.1" 200 -
+2025-07-11 14:48:45,144 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:48:45,321 - stock_service - WARNING - 网络搜索股票失败: 江苏银行, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟搜索
+2025-07-11 14:48:45,321 - stock_service - INFO - 模拟搜索股票: 江苏银行, 找到 1 个结果
+2025-07-11 14:48:45,404 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:48:45] "GET /api/stocks/search?keyword=江苏银行&limit=10 HTTP/1.1" 200 -
+2025-07-11 14:48:47,009 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:48:47,175 - stock_service - WARNING - 网络获取股票数据失败: 600919, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟数据
+2025-07-11 14:48:47,276 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:48:47] "[33mPOST /api/watchlist HTTP/1.1[0m" 404 -
+2025-07-11 14:50:49,154 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:50:49,318 - stock_service - WARNING - 网络获取股票数据失败: 000001, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟数据
+2025-07-11 14:50:49,319 - stock_service - INFO - 返回模拟股票数据: 000001
+2025-07-11 14:50:49,320 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:50:49,496 - stock_service - WARNING - 网络获取股票数据失败: 601318, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))，使用模拟数据
+2025-07-11 14:50:49,496 - stock_service - INFO - 返回模拟股票数据: 601318
+2025-07-11 14:50:49,589 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:50:49] "GET /api/watchlist HTTP/1.1" 200 -
+2025-07-11 14:52:23,977 - werkzeug - INFO -  * Detected change in 'e:\\AICode\\StockInsight\\backend\\stock_service.py', reloading
+2025-07-11 14:52:24,082 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 14:52:25,256 - database - INFO - 数据库初始化完成
+2025-07-11 14:52:25,256 - app - INFO - 数据库初始化完成
+2025-07-11 14:52:25,256 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 14:52:25,259 - database - INFO - 数据库初始化完成
+2025-07-11 14:52:25,260 - app - INFO - 数据库初始化完成
+2025-07-11 14:52:25,260 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 14:52:25,265 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 14:52:25,269 - werkzeug - INFO -  * Debugger PIN: 992-224-397
+2025-07-11 14:52:37,297 - werkzeug - INFO -  * Detected change in 'e:\\AICode\\StockInsight\\backend\\stock_service.py', reloading
+2025-07-11 14:52:37,397 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 14:52:38,701 - database - INFO - 数据库初始化完成
+2025-07-11 14:52:38,701 - app - INFO - 数据库初始化完成
+2025-07-11 14:52:38,701 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 14:52:38,704 - database - INFO - 数据库初始化完成
+2025-07-11 14:52:38,704 - app - INFO - 数据库初始化完成
+2025-07-11 14:52:38,704 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 14:52:38,711 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 14:52:38,714 - werkzeug - INFO -  * Debugger PIN: 992-224-397
+2025-07-11 14:52:42,728 - werkzeug - INFO -  * Detected change in 'e:\\AICode\\StockInsight\\backend\\stock_service.py', reloading
+2025-07-11 14:52:42,831 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 14:52:44,055 - database - INFO - 数据库初始化完成
+2025-07-11 14:52:44,055 - app - INFO - 数据库初始化完成
+2025-07-11 14:52:44,055 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 14:52:44,058 - database - INFO - 数据库初始化完成
+2025-07-11 14:52:44,058 - app - INFO - 数据库初始化完成
+2025-07-11 14:52:44,058 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 14:52:44,066 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 14:52:44,068 - werkzeug - INFO -  * Debugger PIN: 992-224-397
+2025-07-11 14:52:44,074 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:52:44,360 - stock_service - ERROR - 网络搜索股票失败: 江苏银行, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:52:44,450 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:52:44] "GET /api/stocks/search?keyword=江苏银行 HTTP/1.1" 200 -
+2025-07-11 14:53:46,619 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:53:46,873 - stock_service - ERROR - 网络获取股票数据失败: 000001, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:53:46,874 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:53:47,128 - stock_service - ERROR - 网络获取股票数据失败: 601318, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:53:47,244 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:53:47] "GET /api/watchlist HTTP/1.1" 200 -
+2025-07-11 14:53:47,448 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:53:47] "GET /api/stats?hours=24 HTTP/1.1" 200 -
+2025-07-11 14:54:18,505 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:54:18,792 - urllib3.connectionpool - DEBUG - https://82.push2.eastmoney.com:443 "GET /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 HTTP/1.1" 200 10895
+2025-07-11 14:54:18,800 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:54:19,055 - stock_service - ERROR - 网络搜索股票失败: 江苏银行, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:54:19,163 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:54:19] "GET /api/stocks/search?keyword=江苏银行 HTTP/1.1" 200 -
+2025-07-11 14:54:22,595 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:54:22,850 - stock_service - ERROR - 网络获取股票数据失败: 601919, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:54:22,951 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:54:22] "[33mGET /api/stocks/601919 HTTP/1.1[0m" 404 -
+2025-07-11 14:54:33,865 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:54:34,123 - stock_service - ERROR - 网络搜索股票失败: 平安银行, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:54:34,245 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:54:34] "GET /api/stocks/search?keyword=平安银行 HTTP/1.1" 200 -
+2025-07-11 14:54:53,160 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:54:53,412 - stock_service - ERROR - 网络搜索股票失败: 000001, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:54:53,516 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:54:53] "GET /api/stocks/search?keyword=000001 HTTP/1.1" 200 -
+2025-07-11 14:55:12,382 - werkzeug - INFO -  * Detected change in 'e:\\AICode\\StockInsight\\backend\\stock_service.py', reloading
+2025-07-11 14:55:12,578 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 14:55:13,803 - database - INFO - 数据库初始化完成
+2025-07-11 14:55:13,803 - app - INFO - 数据库初始化完成
+2025-07-11 14:55:13,803 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 14:55:13,807 - database - INFO - 数据库初始化完成
+2025-07-11 14:55:13,807 - app - INFO - 数据库初始化完成
+2025-07-11 14:55:13,807 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 14:55:13,813 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 14:55:13,815 - werkzeug - INFO -  * Debugger PIN: 992-224-397
+2025-07-11 14:55:40,185 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:55:40,438 - stock_service - ERROR - 网络获取股票数据失败: 601919, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:55:40,530 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:55:40] "[33mGET /api/stocks/601919 HTTP/1.1[0m" 404 -
+2025-07-11 14:55:43,159 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:55:43,413 - stock_service - ERROR - 网络搜索股票失败: 江苏银行, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:55:43,492 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:55:43] "GET /api/stocks/search?keyword=江苏银行 HTTP/1.1" 200 -
+2025-07-11 14:56:01,426 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:56:01,683 - stock_service - ERROR - 网络搜索股票失败: 平安, 错误: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-07-11 14:56:01,809 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:56:01] "GET /api/stocks/search?keyword=平安 HTTP/1.1" 200 -
+2025-07-11 14:57:17,430 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:57:17,611 - stock_service - ERROR - 网络搜索股票失败: 江苏银行, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2025-07-11 14:57:17,728 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:57:17] "GET /api/stocks/search?keyword=江苏银行 HTTP/1.1" 200 -
+2025-07-11 14:57:18,707 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:57:18,886 - stock_service - ERROR - 网络搜索股票失败: 江苏银行, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2025-07-11 14:57:18,962 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:57:18] "GET /api/stocks/search?keyword=江苏银行 HTTP/1.1" 200 -
+2025-07-11 14:57:21,916 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:57:22,105 - stock_service - ERROR - 网络获取股票数据失败: 601919, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2025-07-11 14:57:22,201 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:57:22] "[33mGET /api/stocks/601919 HTTP/1.1[0m" 404 -
+2025-07-11 14:57:26,699 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:57:26,864 - stock_service - ERROR - 网络搜索股票失败: 招商, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2025-07-11 14:57:27,111 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:57:27] "GET /api/stocks/search?keyword=招商 HTTP/1.1" 200 -
+2025-07-11 14:57:45,123 - werkzeug - INFO -  * Detected change in 'e:\\AICode\\StockInsight\\backend\\stock_service.py', reloading
+2025-07-11 14:57:45,244 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 14:57:46,453 - database - INFO - 数据库初始化完成
+2025-07-11 14:57:46,453 - app - INFO - 数据库初始化完成
+2025-07-11 14:57:46,453 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 14:57:46,457 - database - INFO - 数据库初始化完成
+2025-07-11 14:57:46,457 - app - INFO - 数据库初始化完成
+2025-07-11 14:57:46,457 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 14:57:46,465 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 14:57:46,470 - werkzeug - INFO -  * Debugger PIN: 992-224-397
+2025-07-11 14:59:36,094 - stock_service - INFO - 开始获取股票列表数据，搜索关键词: 招商
+2025-07-11 14:59:36,095 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 14:59:36,266 - stock_service - ERROR - 网络搜索股票失败: 招商, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2025-07-11 14:59:36,396 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 14:59:36] "GET /api/stocks/search?keyword=招商 HTTP/1.1" 200 -
+2025-07-11 15:01:34,706 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 15:01:34,923 - stock_service - ERROR - 网络获取股票数据失败: 601919, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2025-07-11 15:01:35,157 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 15:01:35] "[33mGET /api/stocks/601919 HTTP/1.1[0m" 404 -
+2025-07-11 15:01:38,144 - stock_service - INFO - 开始获取股票列表数据，搜索关键词: 江苏银行
+2025-07-11 15:01:38,146 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): 82.push2.eastmoney.com:443
+2025-07-11 15:01:38,364 - stock_service - ERROR - 网络搜索股票失败: 江苏银行, 错误: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2025-07-11 15:01:38,455 - werkzeug - INFO - 127.0.0.1 - - [11/Jul/2025 15:01:38] "GET /api/stocks/search?keyword=江苏银行 HTTP/1.1" 200 -
+2025-07-11 17:06:55,119 - werkzeug - INFO -  * Detected change in 'e:\\AICode\\StockInsight\\backend\\stock_service.py', reloading
+2025-07-11 17:06:55,288 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 17:06:55,787 - database - INFO - 数据库初始化完成
+2025-07-11 17:06:55,787 - app - INFO - 数据库初始化完成
+2025-07-11 17:06:55,787 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 17:06:55,790 - database - INFO - 数据库初始化完成
+2025-07-11 17:06:55,790 - app - INFO - 数据库初始化完成
+2025-07-11 17:06:55,790 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 17:06:55,798 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 17:06:55,800 - werkzeug - INFO -  * Debugger PIN: 992-224-397
+2025-07-11 17:06:56,806 - werkzeug - INFO -  * Detected change in 'e:\\AICode\\StockInsight\\backend\\stock_service.py', reloading
+2025-07-11 17:06:56,881 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 17:06:57,390 - database - INFO - 数据库初始化完成
+2025-07-11 17:06:57,390 - app - INFO - 数据库初始化完成
+2025-07-11 17:06:57,390 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 17:06:57,394 - database - INFO - 数据库初始化完成
+2025-07-11 17:06:57,394 - app - INFO - 数据库初始化完成
+2025-07-11 17:06:57,394 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 17:06:57,402 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 17:06:57,404 - werkzeug - INFO -  * Debugger PIN: 992-224-397

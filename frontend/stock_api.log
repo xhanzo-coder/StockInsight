@@ -1,0 +1,40 @@
+2025-07-11 15:01:23,215 - database - INFO - 数据库初始化完成
+2025-07-11 15:01:23,215 - app - INFO - 数据库初始化完成
+2025-07-11 15:01:23,215 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 15:01:23,218 - database - INFO - 数据库初始化完成
+2025-07-11 15:01:23,218 - app - INFO - 数据库初始化完成
+2025-07-11 15:01:23,218 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 15:01:23,230 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.31.103:5000
+2025-07-11 15:01:23,231 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-11 15:01:23,231 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 15:01:24,373 - database - INFO - 数据库初始化完成
+2025-07-11 15:01:24,373 - app - INFO - 数据库初始化完成
+2025-07-11 15:01:24,373 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 15:01:24,376 - database - INFO - 数据库初始化完成
+2025-07-11 15:01:24,376 - app - INFO - 数据库初始化完成
+2025-07-11 15:01:24,376 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 15:01:24,383 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 15:01:24,385 - werkzeug - INFO -  * Debugger PIN: 992-224-397
+2025-07-11 17:06:55,537 - werkzeug - INFO -  * Detected change in 'e:\\AICode\\StockInsight\\backend\\stock_service.py', reloading
+2025-07-11 17:06:55,728 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 17:06:56,201 - database - INFO - 数据库初始化完成
+2025-07-11 17:06:56,202 - app - INFO - 数据库初始化完成
+2025-07-11 17:06:56,202 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 17:06:56,205 - database - INFO - 数据库初始化完成
+2025-07-11 17:06:56,205 - app - INFO - 数据库初始化完成
+2025-07-11 17:06:56,205 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 17:06:56,212 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 17:06:56,215 - werkzeug - INFO -  * Debugger PIN: 992-224-397
+2025-07-11 17:06:57,222 - werkzeug - INFO -  * Detected change in 'e:\\AICode\\StockInsight\\backend\\stock_service.py', reloading
+2025-07-11 17:06:57,293 - werkzeug - INFO -  * Restarting with stat
+2025-07-11 17:06:57,750 - database - INFO - 数据库初始化完成
+2025-07-11 17:06:57,750 - app - INFO - 数据库初始化完成
+2025-07-11 17:06:57,750 - app - INFO - 股票数据API应用创建完成，配置: default
+2025-07-11 17:06:57,753 - database - INFO - 数据库初始化完成
+2025-07-11 17:06:57,753 - app - INFO - 数据库初始化完成
+2025-07-11 17:06:57,753 - app - INFO - 股票数据API应用创建完成，配置: development
+2025-07-11 17:06:57,762 - werkzeug - WARNING -  * Debugger is active!
+2025-07-11 17:06:57,765 - werkzeug - INFO -  * Debugger PIN: 992-224-397
