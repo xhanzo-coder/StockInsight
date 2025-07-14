@@ -1,31 +1,27 @@
 # Flask核心框架
-Flask==2.3.3
+Flask>=3.0.0
 
 # CORS跨域支持
-Flask-CORS==4.0.0
+Flask-CORS>=4.0.0
 
 # 股票数据获取库
-easyquotation==0.7.7
+easyquotation>=0.7.7
 
 # 数据处理
-pandas==2.0.3
-numpy==1.24.3
+pandas>=2.1.0
+numpy>=1.25.0
 
 # HTTP请求库
-requests==2.31.0
+requests>=2.31.0
 
 # 日期时间处理
-python-dateutil==2.8.2
+python-dateutil>=2.8.2
 
 # JSON处理增强
-simplejson==3.19.1
+simplejson>=3.19.1
 
 # 工具库
-Werkzeug==2.3.7
+Werkzeug>=3.0.0
 
 # 日志增强
-coloredlogs==15.0.1
-
-# 开发工具（可选）
-# pytest==7.4.0
-# pytest-flask==1.2.0
+coloredlogs>=15.0.1
