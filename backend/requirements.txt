@@ -30,3 +30,5 @@ gunicorn==21.2.0
 # 开发工具（可选）
 # pytest==7.4.0
 # pytest-flask==1.2.0
+
+beautifulsoup4==4.12.2
