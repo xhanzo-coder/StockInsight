@@ -139,15 +139,40 @@ export const handleApiError = (error: any): string => {
 };
 
 // 格式化股利支付率
-export const formatDividendRatio = (ratio: number | null | undefined): string => {
+export const formatDividendRatio = (ratio: number | string | null | undefined): string => {
   if (ratio === null || ratio === undefined) return '--';
-  return `${(ratio * 100).toFixed(1)}%`;
+  
+  // 如果是字符串且已经包含%，直接返回
+  if (typeof ratio === 'string') {
+    if (ratio.includes('%')) {
+      return ratio;
+    }
+    // 如果是字符串数字，转换为数字处理
+    const numRatio = parseFloat(ratio);
+    if (isNaN(numRatio)) return '--';
+    return `${numRatio.toFixed(1)}%`;
+  }
+  
+  // 如果是数字，直接显示（后端已经是百分比格式）
+  return `${ratio.toFixed(1)}%`;
 };
 
 // 格式化ROE显示
-export const formatROE = (roe: number | null | undefined): string => {
+export const formatROE = (roe: number | string | null | undefined): string => {
   if (roe === null || roe === undefined) return '--';
-  // ROE通常以百分比形式返回，直接显示
+  
+  // 如果是字符串且已经包含%，直接返回
+  if (typeof roe === 'string') {
+    if (roe.includes('%')) {
+      return roe;
+    }
+    // 如果是字符串数字，转换为数字处理
+    const numROE = parseFloat(roe);
+    if (isNaN(numROE)) return '--';
+    return `${numROE.toFixed(2)}%`;
+  }
+  
+  // 如果是数字，直接显示（后端已经是百分比格式）
   return `${roe.toFixed(2)}%`;
 };
 

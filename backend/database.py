@@ -264,6 +264,7 @@ class DatabaseManager:
             conn = self.get_connection()
             cursor = conn.cursor()
             
+            # 使用参数化查询，避免SQL注入
             cursor.execute('''
                 SELECT 
                     endpoint,
@@ -271,19 +272,23 @@ class DatabaseManager:
                     AVG(response_time_ms) as avg_response_time,
                     COUNT(CASE WHEN response_code >= 400 THEN 1 END) as error_count
                 FROM api_logs 
-                WHERE request_time >= datetime('now', '-{} hours')
+                WHERE request_time >= datetime('now', '-' || ? || ' hours')
                 GROUP BY endpoint
                 ORDER BY call_count DESC
-            '''.format(hours))
+            ''', (hours,))
             
             stats = []
             for row in cursor.fetchall():
+                call_count = row['call_count']
+                error_count = row['error_count']
+                success_rate = ((call_count - error_count) / call_count * 100) if call_count > 0 else 0
+                
                 stats.append({
                     'endpoint': row['endpoint'],
-                    'call_count': row['call_count'],
-                    'avg_response_time': row['avg_response_time'],
-                    'error_count': row['error_count'],
-                    'success_rate': (row['call_count'] - row['error_count']) / row['call_count'] * 100
+                    'call_count': call_count,
+                    'avg_response_time': round(row['avg_response_time'] or 0, 2),
+                    'error_count': error_count,
+                    'success_rate': round(success_rate, 2)
                 })
             
             conn.close()
@@ -299,10 +304,11 @@ class DatabaseManager:
             conn = self.get_connection()
             cursor = conn.cursor()
             
+            # 使用参数化查询，避免SQL注入
             cursor.execute('''
                 DELETE FROM api_logs 
-                WHERE request_time < datetime('now', '-{} days')
-            '''.format(days))
+                WHERE request_time < datetime('now', '-' || ? || ' days')
+            ''', (days,))
             
             deleted_count = cursor.rowcount
             conn.commit()

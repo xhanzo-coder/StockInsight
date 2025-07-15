@@ -3,7 +3,7 @@ import { frontendCache } from '../utils/cache';
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -43,11 +43,12 @@ export interface StockInfo {
   change_amount: number;
   market_cap: string;
   pe_ratio_ttm: number;
-  roe: number;
+  roe: number | string;
+  market_earning_ratio: number;
   pb_ratio: number;
-  dividend_payout_ratio: number;
+  dividend_payout_ratio: number | string;
   correction_factor: number;
-  corrected_pe: number;
+  corrected_market_earning_ratio: number;
   theoretical_price: number;
   added_time: string;
   updated_time: string;
@@ -89,11 +90,12 @@ export interface SearchResult {
   change_percent: number;
   market_cap: string;
   pe_ratio_ttm: number;
-  roe: number;
+  roe: number | string;
+  market_earning_ratio: number;
   pb_ratio: number;
-  dividend_payout_ratio: number;
+  dividend_payout_ratio: number | string;
   correction_factor: number;
-  corrected_pe: number;
+  corrected_market_earning_ratio: number;
   theoretical_price: number;
 }
 

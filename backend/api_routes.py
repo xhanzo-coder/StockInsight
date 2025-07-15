@@ -304,21 +304,22 @@ def get_watchlist():
         for item in watchlist:
             stock_info = stock_service.get_stock_basic_info(item['code'])
             if stock_info:
-                # 合并关注列表基本信息和完整股票信息
+                # 合并关注列表基本信息和完整股票信息（按新字段格式）
                 enriched_item = {
                     **item,  # 包含 code, name, industry, added_time, updated_time
                     'current_price': stock_info['current_price'],
                     'change_percent': stock_info['change_percent'],
                     'change_amount': stock_info['change_amount'],
-                    # 添加完整的财务指标
-                    'market_cap': stock_info.get('market_cap'),
-                    'pe_ratio_ttm': stock_info.get('pe_ratio_ttm'),
-                    'roe': stock_info.get('roe'),
-                    'pb_ratio': stock_info.get('pb_ratio'),
-                    'dividend_payout_ratio': stock_info.get('dividend_payout_ratio'),
-                    'correction_factor': stock_info.get('correction_factor'),
-                    'corrected_pe': stock_info.get('corrected_pe'),
-                    'theoretical_price': stock_info.get('theoretical_price')
+                    # 添加完整的11个字段
+                    'market_cap': stock_info.get('market_cap'),  # 总市值（亿）
+                    'pe_ratio_ttm': stock_info.get('pe_ratio_ttm'),  # 市盈率(TTM)
+                    'roe': stock_info.get('roe'),  # ROE（已含百分号）
+                    'market_earning_ratio': stock_info.get('market_earning_ratio'),  # 市赚率
+                    'pb_ratio': stock_info.get('pb_ratio'),  # 市净率
+                    'dividend_payout_ratio': stock_info.get('dividend_payout_ratio'),  # 股利支付率（已含百分号）
+                    'correction_factor': stock_info.get('correction_factor'),  # 修正系数
+                    'corrected_market_earning_ratio': stock_info.get('corrected_market_earning_ratio'),  # 修正市赚率
+                    'theoretical_price': stock_info.get('theoretical_price')  # 理论股价
                 }
             else:
                 # 如果获取股票信息失败，设置默认值
@@ -330,10 +331,11 @@ def get_watchlist():
                     'market_cap': None,
                     'pe_ratio_ttm': None,
                     'roe': None,
+                    'market_earning_ratio': None,
                     'pb_ratio': None,
                     'dividend_payout_ratio': None,
                     'correction_factor': None,
-                    'corrected_pe': None,
+                    'corrected_market_earning_ratio': None,
                     'theoretical_price': None
                 }
             enriched_watchlist.append(enriched_item)

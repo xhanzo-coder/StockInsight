@@ -94,6 +94,20 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemo
       ),
     },
     {
+      title: '市赚率',
+      dataIndex: 'market_earning_ratio',
+      key: 'market_earning_ratio',
+      width: 80,
+      className: 'hide-mobile',
+      sorter: (a: StockInfo, b: StockInfo) => (a.market_earning_ratio || 0) - (b.market_earning_ratio || 0),
+      sortOrder: sortedInfo.columnKey === 'market_earning_ratio' ? sortedInfo.order : null,
+      render: (ratio: number) => (
+        <span style={{ fontSize: '0.9rem' }}>
+          {formatNumber(ratio)}
+        </span>
+      ),
+    },
+    {
       title: 'TTM市盈率',
       dataIndex: 'pe_ratio_ttm',
       key: 'pe_ratio_ttm',
@@ -114,7 +128,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemo
       dataIndex: 'roe',
       key: 'roe',
       width: 80,
-      sorter: (a: StockInfo, b: StockInfo) => (a.roe || 0) - (b.roe || 0),
+      sorter: (a: StockInfo, b: StockInfo) => {
+        const aValue = typeof a.roe === 'string' ? parseFloat(a.roe) || 0 : a.roe || 0;
+        const bValue = typeof b.roe === 'string' ? parseFloat(b.roe) || 0 : b.roe || 0;
+        return aValue - bValue;
+      },
       sortOrder: sortedInfo.columnKey === 'roe' ? sortedInfo.order : null,
       render: (roe: number) => (
         <span style={{ 
@@ -145,7 +163,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemo
       key: 'dividend_payout_ratio',
       width: 100,
       className: 'hide-mobile',
-      sorter: (a: StockInfo, b: StockInfo) => (a.dividend_payout_ratio || 0) - (b.dividend_payout_ratio || 0),
+      sorter: (a: StockInfo, b: StockInfo) => {
+        const aValue = typeof a.dividend_payout_ratio === 'string' ? parseFloat(a.dividend_payout_ratio) || 0 : a.dividend_payout_ratio || 0;
+        const bValue = typeof b.dividend_payout_ratio === 'string' ? parseFloat(b.dividend_payout_ratio) || 0 : b.dividend_payout_ratio || 0;
+        return aValue - bValue;
+      },
       sortOrder: sortedInfo.columnKey === 'dividend_payout_ratio' ? sortedInfo.order : null,
       render: (ratio: number) => (
         <span style={{ fontSize: '0.9rem' }}>
@@ -176,21 +198,21 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemo
     },
     {
       title: (
-        <Tooltip title="修正市盈率 = TTM市盈率 × 修正系数">
-          修正PE
+        <Tooltip title="修正市赚率 = 修正系数 × 市赚率">
+          修正市赚率
         </Tooltip>
       ),
-      dataIndex: 'corrected_pe',
-      key: 'corrected_pe',
+      dataIndex: 'corrected_market_earning_ratio',
+      key: 'corrected_market_earning_ratio',
       width: 100,
-      sorter: (a: StockInfo, b: StockInfo) => (a.corrected_pe || 0) - (b.corrected_pe || 0),
-      sortOrder: sortedInfo.columnKey === 'corrected_pe' ? sortedInfo.order : null,
-      render: (pe: number) => (
+      sorter: (a: StockInfo, b: StockInfo) => (a.corrected_market_earning_ratio || 0) - (b.corrected_market_earning_ratio || 0),
+      sortOrder: sortedInfo.columnKey === 'corrected_market_earning_ratio' ? sortedInfo.order : null,
+      render: (ratio: number) => (
         <span style={{ 
-          color: pe && pe < 12 ? '#22c55e' : pe && pe > 25 ? '#ef4444' : '#ffffff',
+          color: ratio && ratio < 1.2 ? '#22c55e' : ratio && ratio > 2.5 ? '#ef4444' : '#ffffff',
           fontSize: '0.9rem'
         }}>
-          {formatNumber(pe)}
+          {formatNumber(ratio)}
         </span>
       ),
     },

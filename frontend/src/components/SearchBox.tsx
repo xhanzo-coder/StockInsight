@@ -6,6 +6,7 @@ import { debounce, handleApiError } from '../utils/helpers';
 
 interface SearchBoxProps {
   onSelectStock: (stock: SearchResult) => void;
+  onAddStock?: (stock: SearchResult) => void;
   placeholder?: string;
 }
 
@@ -16,7 +17,8 @@ interface OptionType {
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ 
-  onSelectStock, 
+  onSelectStock,
+  onAddStock,
   placeholder = "搜索股票代码或名称..." 
 }) => {
   const [options, setOptions] = useState<OptionType[]>([]);
@@ -39,20 +41,41 @@ const SearchBox: React.FC<SearchBoxProps> = ({
             value: `${stock.code} ${stock.name}`,
             label: (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
+                <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 500, color: '#ffffff' }}>{stock.name}</div>
                   <div style={{ fontSize: '0.8rem', color: '#8b8d97' }}>
                     {stock.code} | ¥{stock.current_price.toFixed(2)}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ 
-                    color: stock.change_percent > 0 ? '#22c55e' : 
-                           stock.change_percent < 0 ? '#ef4444' : '#8b8d97',
-                    fontSize: '0.8rem'
-                  }}>
-                    {stock.change_percent > 0 ? '+' : ''}{stock.change_percent.toFixed(2)}%
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ 
+                      color: stock.change_percent > 0 ? '#22c55e' : 
+                             stock.change_percent < 0 ? '#ef4444' : '#8b8d97',
+                      fontSize: '0.8rem'
+                    }}>
+                      {stock.change_percent > 0 ? '+' : ''}{stock.change_percent.toFixed(2)}%
+                    </div>
                   </div>
+                  {onAddStock && (
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddStock(stock);
+                      }}
+                      style={{
+                        background: '#667eea',
+                        borderColor: '#667eea',
+                        fontSize: '0.75rem',
+                        height: '24px',
+                        padding: '0 8px'
+                      }}
+                    >
+                      添加
+                    </Button>
+                  )}
                 </div>
               </div>
             ),
@@ -102,20 +125,41 @@ const SearchBox: React.FC<SearchBoxProps> = ({
             value: `${stock.code} ${stock.name}`,
             label: (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
+                <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 500, color: '#ffffff' }}>{stock.name}</div>
                   <div style={{ fontSize: '0.8rem', color: '#8b8d97' }}>
                     {stock.code} | ¥{stock.current_price.toFixed(2)}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ 
-                    color: stock.change_percent > 0 ? '#22c55e' : 
-                           stock.change_percent < 0 ? '#ef4444' : '#8b8d97',
-                    fontSize: '0.8rem'
-                  }}>
-                    {stock.change_percent > 0 ? '+' : ''}{stock.change_percent.toFixed(2)}%
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ 
+                      color: stock.change_percent > 0 ? '#22c55e' : 
+                             stock.change_percent < 0 ? '#ef4444' : '#8b8d97',
+                      fontSize: '0.8rem'
+                    }}>
+                      {stock.change_percent > 0 ? '+' : ''}{stock.change_percent.toFixed(2)}%
+                    </div>
                   </div>
+                  {onAddStock && (
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddStock(stock);
+                      }}
+                      style={{
+                        background: '#667eea',
+                        borderColor: '#667eea',
+                        fontSize: '0.75rem',
+                        height: '24px',
+                        padding: '0 8px'
+                      }}
+                    >
+                      添加
+                    </Button>
+                  )}
                 </div>
               </div>
             ),
@@ -147,10 +191,25 @@ const SearchBox: React.FC<SearchBoxProps> = ({
   };
 
   return (
-    <div className="search-container">
-      <div className="search-icon">
-        <SearchOutlined />
-      </div>
+    <div 
+      style={{
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        width: '320px',
+        height: '48px',
+        margin: '0 auto 20px auto'
+      }}
+    >
+      <SearchOutlined 
+        style={{
+          position: 'absolute',
+          left: '14px',
+          color: '#8b8d97',
+          fontSize: '16px',
+          zIndex: 10
+        }}
+      />
       <AutoComplete
         value={searchValue}
         options={options}
@@ -158,34 +217,63 @@ const SearchBox: React.FC<SearchBoxProps> = ({
         onSelect={handleSelect}
         onInputKeyDown={handleKeyPress}
         placeholder={placeholder}
-        className="search-input"
+        style={{
+          width: '100%',
+          height: '48px'
+        }}
         dropdownStyle={{
           background: '#2a2d3a',
           border: '1px solid #3a3d4a',
-          borderRadius: '8px'
+          borderRadius: '8px',
+          zIndex: 1000
         }}
         notFoundContent={loading ? '搜索中...' : searchValue.trim().length < 2 ? '请输入至少2个字符' : '暂无结果'}
         filterOption={false}
       />
       <Button 
         type="primary" 
-        className="search-btn"
         onClick={handleSearchClick}
         loading={loading}
         style={{
           position: 'absolute',
-          right: 6,
+          right: '6px',
           background: '#667eea',
           borderColor: '#667eea',
           borderRadius: '20px',
           padding: '8px 16px',
-          fontSize: '0.85rem',
+          fontSize: '14px',
           fontWeight: 500,
-          zIndex: 1
+          zIndex: 10,
+          height: '36px',
+          lineHeight: '20px'
         }}
       >
         搜索
       </Button>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .ant-select-selector {
+            background: #2a2d3a !important;
+            border: 1px solid #3a3d4a !important;
+            border-radius: 24px !important;
+            padding: 0 50px 0 40px !important;
+            height: 48px !important;
+            color: #ffffff !important;
+            display: flex !important;
+            align-items: center !important;
+          }
+          .ant-select-selection-search-input {
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            height: 100% !important;
+          }
+          .ant-select-selection-placeholder {
+            color: #8b8d97 !important;
+            left: 40px !important;
+          }
+        `
+      }} />
     </div>
   );
 };

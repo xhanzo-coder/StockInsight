@@ -167,7 +167,7 @@ const App: React.FC = () => {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <SearchBox onSelectStock={handleAddStock} />
+          <SearchBox onSelectStock={handleAddStock} onAddStock={handleAddStock} />
           
           <Space>
             <Button 

@@ -9,6 +9,8 @@ import warnings
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
+import concurrent.futures
+import threading
 
 warnings.filterwarnings('ignore')
 
@@ -21,8 +23,17 @@ class StockService:
     
     def __init__(self):
         self.eq_sina = easyquotation.use('sina')
-        self.cache = {}
-        self.cache_timeout = 300  # 5分钟缓存
+        self.cache = {}  # 简单的内存缓存
+        self.cache_timeout = 120  # 缓存超时时间（秒）
+        self.session = requests.Session()  # 复用连接
+        # 设置连接池参数
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=10,
+            pool_maxsize=20,
+            max_retries=1
+        )
+        self.session.mount('http://', adapter)
+        self.session.mount('https://', adapter)
     
     def search_stocks(self, keyword: str, limit: int = 10) -> List[Dict[str, Any]]:
         """搜索股票 - 返回11个字段的完整数据"""
@@ -81,22 +92,24 @@ class StockService:
                 basic_data, valuation_data, financial_data
             )
             
-            # 5. 合并所有数据为11个字段
+            # 5. 合并所有数据为11个字段（按用户要求格式化）
             stock_info = {
                 'code': code,
-                'name': basic_data['name'],
-                'industry': financial_data['industry'],
-                'current_price': basic_data['current_price'],
+                'name': basic_data['name'],  # 股票名称
+                'industry': financial_data['industry'],  # 所属行业
+                'market_cap': f"{valuation_data['total_market_value']}亿",  # 总市值（亿）
+                'current_price': basic_data['current_price'],  # 当前价格
+                'pe_ratio_ttm': valuation_data['pe_ttm'],  # 市盈率(TTM)
+                'roe': f"{financial_data['roe']}%" if financial_data['roe'] > 0 else "0%",  # ROE（加百分号）
+                'market_earning_ratio': derived_data['market_earning_ratio'],  # 市赚率
+                'pb_ratio': valuation_data['pb'],  # 市净率
+                'dividend_payout_ratio': f"{financial_data['dividend_ratio']}%" if financial_data['dividend_ratio'] > 0 else "0%",  # 股利支付率（加百分号）
+                'correction_factor': derived_data['correction_factor'],  # 修正系数
+                'corrected_pe': derived_data['corrected_market_earning_ratio'],  # 修正市赚率（保持向后兼容）
+                'corrected_market_earning_ratio': derived_data['corrected_market_earning_ratio'],  # 修正市赚率
+                'theoretical_price': derived_data['theoretical_price'],  # 理论股价
                 'change_percent': basic_data.get('change_percent', 0),
                 'change_amount': basic_data.get('change_amount', 0),
-                'market_cap': f"{valuation_data['total_market_value']}亿",
-                'pe_ratio_ttm': valuation_data['pe_ttm'],
-                'roe': financial_data['roe'],
-                'pb_ratio': valuation_data['pb'],
-                'dividend_payout_ratio': financial_data['dividend_ratio'],
-                'correction_factor': derived_data['correction_factor'],
-                'corrected_pe': derived_data['corrected_market_earning_ratio'],
-                'theoretical_price': derived_data['theoretical_price'],
                 'timestamp': datetime.now().isoformat()
             }
             
@@ -188,7 +201,7 @@ class StockService:
             tencent_code = f"sh{code}" if code.startswith('6') else f"sz{code}"
             url = f"http://qt.gtimg.cn/q={tencent_code}"
             
-            response = requests.get(url, timeout=5)
+            response = self.session.get(url, timeout=2)
             response.encoding = 'gbk'
             data = response.text
             
@@ -229,7 +242,7 @@ class StockService:
                 'fields': 'f116,f117'  # 总股本、总市值
             }
             
-            response = requests.get(url, params=params, timeout=5)
+            response = self.session.get(url, params=params, timeout=2)
             data = response.json()
             
             if 'data' in data and data['data']:
@@ -262,12 +275,24 @@ class StockService:
     
     def _get_financial_data(self, code: str) -> Dict[str, Any]:
         """获取财务数据（ROE、行业、股利支付率）"""
-        # 方法1: 自己计算ROE = 净利润 / 净资产
-        roe = self._calculate_roe(code)
+        # 先尝试从API获取ROE
+        roe = self._get_roe_from_apis(code)
         
-        # 方法2: 如果计算失败，尝试从API获取
+        # 如果API获取失败，尝试计算ROE
         if roe == 0:
-            roe = self._get_roe_from_apis(code)
+            roe = self._calculate_roe(code)
+        
+        # 如果还是0，使用行业平均值
+        if roe == 0:
+            industry = self._get_industry(code)
+            industry_roe_map = {
+                '银行': 12.5,
+                '银行业': 12.5,
+                '汽车制造业': 8.0,
+                '房地产业': 10.0,
+                '未知行业': 8.0
+            }
+            roe = industry_roe_map.get(industry, 8.0)
         
         # 获取行业信息
         industry = self._get_industry(code)
@@ -312,7 +337,7 @@ class StockService:
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
             
-            response = requests.get(url, headers=headers, timeout=5)
+            response = self.session.get(url, headers=headers, timeout=2)
             response.encoding = 'gbk'
             
             # 解析HTML获取净利润和净资产
@@ -356,7 +381,7 @@ class StockService:
             tencent_code = f"sh{code}" if code.startswith('6') else f"sz{code}"
             url = f"http://qt.gtimg.cn/q={tencent_code}"
             
-            response = requests.get(url, timeout=5)
+            response = self.session.get(url, timeout=2)
             response.encoding = 'gbk'
             data = response.text
             
@@ -421,7 +446,7 @@ class StockService:
                 'filter': f'(SECUCODE="{code}.{"SH" if code.startswith("6") else "SZ"}")'
             }
             
-            response = requests.get(url, params=params, timeout=5)
+            response = self.session.get(url, params=params, timeout=2)
             
             if response.status_code != 200:
                 return 0
@@ -472,7 +497,7 @@ class StockService:
                 'count': 1
             }
             
-            response = requests.get(url, params=params, headers=headers, timeout=5)
+            response = self.session.get(url, params=params, headers=headers, timeout=2)
             if response.status_code == 200:
                 data = response.json()
                 
@@ -495,7 +520,7 @@ class StockService:
             }
             
             url = f"http://basic.10jqka.com.cn/{code}/finance.html"
-            response = requests.get(url, headers=headers, timeout=5)
+            response = self.session.get(url, headers=headers, timeout=2)
             response.encoding = 'gbk'
             
             roe_patterns = [
@@ -529,7 +554,7 @@ class StockService:
                 'fields': 'f127'  # 行业字段
             }
             
-            response = requests.get(url, params=params, timeout=5)
+            response = self.session.get(url, params=params, timeout=2)
             data = response.json()
             
             if 'data' in data and data['data']:
@@ -590,7 +615,7 @@ class StockService:
                 'filter': f'(SECUCODE="{code}.{"SH" if code.startswith("6") else "SZ"}")'
             }
             
-            response = requests.get(url, params=params, timeout=5)
+            response = self.session.get(url, params=params, timeout=2)
             if response.status_code == 200:
                 try:
                     data = response.json()
@@ -697,18 +722,28 @@ class StockService:
             return False
     
     def get_watchlist(self) -> List[Dict[str, Any]]:
-        """获取关注列表（返回测试数据）"""
+        """获取关注列表（并发获取数据）"""
         try:
             # 返回一些测试股票的完整数据
             test_codes = ['000001', '600036', '000002']
             watchlist = []
             
-            for code in test_codes:
-                stock_data = self.get_stock_complete_data(code)
-                if stock_data:
-                    stock_data['added_time'] = datetime.now().isoformat()
-                    stock_data['updated_time'] = datetime.now().isoformat()
-                    watchlist.append(stock_data)
+            # 使用线程池并发获取股票数据
+            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+                # 提交所有任务
+                future_to_code = {executor.submit(self.get_stock_complete_data, code): code for code in test_codes}
+                
+                # 收集结果
+                for future in concurrent.futures.as_completed(future_to_code):
+                    code = future_to_code[future]
+                    try:
+                        stock_data = future.result(timeout=10)  # 10秒超时
+                        if stock_data:
+                            stock_data['added_time'] = datetime.now().isoformat()
+                            stock_data['updated_time'] = datetime.now().isoformat()
+                            watchlist.append(stock_data)
+                    except Exception as e:
+                        logger.error(f"获取股票数据失败 {code}: {e}")
             
             return watchlist
         except Exception as e:
@@ -734,6 +769,39 @@ class StockService:
         """清空缓存"""
         self.cache.clear()
         logger.info("缓存已清空")
+    
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """获取缓存统计信息"""
+        try:
+            total_items = len(self.cache)
+            valid_items = 0
+            expired_items = 0
+            
+            current_time = datetime.now()
+            
+            for cache_key, cache_data in self.cache.items():
+                cache_time = cache_data['timestamp']
+                if (current_time - cache_time).seconds < self.cache_timeout:
+                    valid_items += 1
+                else:
+                    expired_items += 1
+            
+            return {
+                'total_items': total_items,
+                'valid_items': valid_items,
+                'expired_items': expired_items,
+                'cache_timeout_seconds': self.cache_timeout,
+                'hit_rate': round((valid_items / total_items * 100) if total_items > 0 else 0, 2)
+            }
+        except Exception as e:
+            logger.error(f"获取缓存统计失败: {e}")
+            return {
+                'total_items': 0,
+                'valid_items': 0,
+                'expired_items': 0,
+                'cache_timeout_seconds': self.cache_timeout,
+                'hit_rate': 0
+            }
 
 # 创建全局实例
 stock_service = StockService()
