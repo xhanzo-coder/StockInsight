@@ -47,7 +47,7 @@
     ↓
 SQLite 数据库
     ↓
-第三方数据源 (AKShare, easyquotation)
+第三方数据源 (easyquotation)
 ```
 
 ### 前端架构

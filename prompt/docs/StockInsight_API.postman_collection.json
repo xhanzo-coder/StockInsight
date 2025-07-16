@@ -1,0 +1,296 @@
+{
+  "info": {
+    "name": "StockInsight API",
+    "description": "股票数据API接口测试集合",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "stockinsight-api-collection",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "api_prefix",
+      "value": "/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "健康检查",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{api_prefix}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["{{api_prefix}}", "health"]
+        },
+        "description": "检查API服务健康状态"
+      },
+      "response": []
+    },
+    {
+      "name": "股票历史数据 - 平安银行1个月",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{api_prefix}}/stocks/000001/history?period=1m",
+          "host": ["{{base_url}}"],
+          "path": ["{{api_prefix}}", "stocks", "000001", "history"],
+          "query": [
+            {
+              "key": "period",
+              "value": "1m",
+              "description": "时间周期：1个月"
+            }
+          ]
+        },
+        "description": "获取平安银行(000001)最近1个月的历史数据"
+      },
+      "response": []
+    },
+    {
+      "name": "股票历史数据 - 贵州茅台1年",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{api_prefix}}/stocks/600519/history?period=1y",
+          "host": ["{{base_url}}"],
+          "path": ["{{api_prefix}}", "stocks", "600519", "history"],
+          "query": [
+            {
+              "key": "period",
+              "value": "1y",
+              "description": "时间周期：1年"
+            }
+          ]
+        },
+        "description": "获取贵州茅台(600519)最近1年的历史数据"
+      },
+      "response": []
+    },
+    {
+      "name": "股票历史数据 - 腾讯控股3个月",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{api_prefix}}/stocks/00700/history?period=3m",
+          "host": ["{{base_url}}"],
+          "path": ["{{api_prefix}}", "stocks", "00700", "history"],
+          "query": [
+            {
+              "key": "period",
+              "value": "3m",
+              "description": "时间周期：3个月"
+            }
+          ]
+        },
+        "description": "获取腾讯控股(00700)最近3个月的历史数据"
+      },
+      "response": []
+    },
+    {
+      "name": "股票历史数据 - 比亚迪1周",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{api_prefix}}/stocks/002594/history?period=1w",
+          "host": ["{{base_url}}"],
+          "path": ["{{api_prefix}}", "stocks", "002594", "history"],
+          "query": [
+            {
+              "key": "period",
+              "value": "1w",
+              "description": "时间周期：1周"
+            }
+          ]
+        },
+        "description": "获取比亚迪(002594)最近1周的历史数据"
+      },
+      "response": []
+    },
+    {
+      "name": "错误测试 - 无效时间周期",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{api_prefix}}/stocks/000001/history?period=invalid",
+          "host": ["{{base_url}}"],
+          "path": ["{{api_prefix}}", "stocks", "000001", "history"],
+          "query": [
+            {
+              "key": "period",
+              "value": "invalid",
+              "description": "无效的时间周期"
+            }
+          ]
+        },
+        "description": "测试无效时间周期的错误处理"
+      },
+      "response": []
+    },
+    {
+      "name": "股票搜索",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{api_prefix}}/stocks/search?keyword=平安",
+          "host": ["{{base_url}}"],
+          "path": ["{{api_prefix}}", "stocks", "search"],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "平安",
+              "description": "搜索关键词"
+            }
+          ]
+        },
+        "description": "搜索包含'平安'的股票"
+      },
+      "response": []
+    },
+    {
+      "name": "股票详情",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{api_prefix}}/stocks/000001",
+          "host": ["{{base_url}}"],
+          "path": ["{{api_prefix}}", "stocks", "000001"]
+        },
+        "description": "获取平安银行(000001)的详细信息"
+      },
+      "response": []
+    },
+    {
+      "name": "市场概览",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{api_prefix}}/market/overview",
+          "host": ["{{base_url}}"],
+          "path": ["{{api_prefix}}", "market", "overview"]
+        },
+        "description": "获取市场概览数据"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 设置时间戳",
+          "pm.environment.set('timestamp', new Date().toISOString());",
+          "",
+          "// 随机选择股票代码进行测试",
+          "const stockCodes = ['000001', '600519', '00700', '002594'];",
+          "const randomCode = stockCodes[Math.floor(Math.random() * stockCodes.length)];",
+          "pm.environment.set('random_stock', randomCode);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 基本状态检查",
+          "pm.test('Status code is 200 or 400', function () {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+          "});",
+          "",
+          "// 响应时间检查",
+          "pm.test('Response time is less than 5000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "// JSON格式检查",
+          "pm.test('Response is valid JSON', function () {",
+          "    pm.response.to.be.json;",
+          "});",
+          "",
+          "// 成功响应的数据结构检查",
+          "if (pm.response.code === 200) {",
+          "    pm.test('Success response has required fields', function () {",
+          "        const jsonData = pm.response.json();",
+          "        if (jsonData.data && Array.isArray(jsonData.data)) {",
+          "            pm.expect(jsonData).to.have.property('success');",
+          "            pm.expect(jsonData).to.have.property('count');",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// 错误响应的结构检查",
+          "if (pm.response.code === 400) {",
+          "    pm.test('Error response has error field', function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData).to.have.property('error');",
+          "        pm.expect(jsonData).to.have.property('success');",
+          "        pm.expect(jsonData.success).to.be.false;",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ]
+}

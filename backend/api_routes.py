@@ -223,14 +223,15 @@ def get_stock_history(stock_code):
                 f'时间周期参数错误，支持的周期: {", ".join(config.SUPPORTED_PERIODS)}'
             )
         
-        # 获取历史数据
-        history_data = stock_service.get_stock_history(stock_code, period)
+        # 获取历史数据（现在返回包含缓存信息的字典）
+        result = stock_service.get_stock_history(stock_code, period)
         
         return create_success_response(
-            data=history_data,
-            count=len(history_data),
-            period=period,
-            stock_code=stock_code
+            data=result['data'],
+            count=result['count'],
+            period=result['period'],
+            stock_code=result['stock_code'],
+            cache_hit=result['cache_hit']
         )
     
     except Exception as e:

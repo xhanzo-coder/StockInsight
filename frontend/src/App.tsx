@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const [lastUpdateTime, setLastUpdateTime] = useState<number | null>(null);
   const [isFromCache, setIsFromCache] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const autoRefreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   console.log('=== App组件状态初始化完成 ===');
 
@@ -149,6 +150,11 @@ const App: React.FC = () => {
       console.error('添加股票失败:', error);
       message.error(handleApiError(error));
     }
+  };
+
+  // 处理Drawer状态变化
+  const handleDrawerStateChange = (isOpen: boolean) => {
+    setIsDrawerOpen(isOpen);
   };
 
   // 从关注列表移除股票
@@ -290,135 +296,172 @@ const App: React.FC = () => {
   return (
     <Layout style={{ minHeight: '100vh', background: '#1a1d29' }}>
       <Header style={{ 
-        background: '#2a2d3a', 
+        background: 'rgba(26, 29, 41, 0.95)',
+        backdropFilter: 'blur(10px)',
         borderBottom: '1px solid #3a3d4a',
-        padding: '0 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: '70px', // 增加头部高度
-        lineHeight: 'normal' // 重置行高，避免影响内部元素
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+        padding: '12px 0',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: isDrawerOpen ? -1 : 1000,
+        opacity: isDrawerOpen ? 0 : 1,
+        visibility: isDrawerOpen ? 'hidden' : 'visible',
+        transition: 'opacity 0.3s ease, visibility 0.3s ease',
+        width: '100%',
+        height: 'auto'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <BarChartOutlined style={{ fontSize: '1.5rem', color: '#667eea', marginRight: 12 }} />
-          <Title level={3} style={{ margin: 0, color: '#ffffff' }}>
-            股票数据看板
-          </Title>
-        </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <SearchBox onSelectStock={handleAddStock} onAddStock={handleAddStock} />
-          
-          {/* 最后更新时间显示 - 可点击刷新 */}
-          {lastUpdateTime && (
-            <Tooltip title="点击刷新数据">
-              <div 
-                style={{ 
+        <div style={{ 
+          maxWidth: '1600px',
+          margin: '0 auto',
+          padding: '0 20px',
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          gap: '24px',
+          flexWrap: 'wrap'
+        }}>
+          {/* 左侧：标题和搜索 */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '24px',
+            flex: '1',
+            minWidth: '300px'
+          }}>
+            <Title level={3} style={{ 
+              margin: 0, 
+              color: '#ffffff',
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              whiteSpace: 'nowrap'
+            }}>
+              <BarChartOutlined style={{ marginRight: 8, color: '#667eea' }} />
+              股票数据看板
+            </Title>
+            
+            <div style={{ flex: 1, maxWidth: '400px' }}>
+              <SearchBox onSelectStock={handleAddStock} onAddStock={handleAddStock} />
+            </div>
+          </div>
+
+          {/* 右侧：状态和操作按钮 */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '16px',
+            flexWrap: 'wrap'
+          }}>
+            {/* 数据状态指示器 */}
+            {lastUpdateTime && (
+              <Tooltip title={`数据更新时间: ${stockCache.formatTimestamp(lastUpdateTime)}`}>
+                <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: 8,
-                  padding: '4px 12px',
+                  gap: 6,
+                  padding: '6px 12px',
                   background: isFromCache ? '#3a2d1a' : '#1a2d3a',
-                  borderRadius: '6px',
-                  border: `1px solid ${isFromCache ? '#4a3d2a' : '#2a3d4a'}` ,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s'
-                }}
-                onClick={handleRefresh}
-              >
-                {isFromCache ? (
-                  <ClockCircleOutlined style={{ 
-                    color: '#f59e0b',
-                    fontSize: '12px'
-                  }} />
-                ) : (
-                  <CheckCircleOutlined style={{ 
-                    color: '#10b981',
-                    fontSize: '12px'
-                  }} />
-                )}
-                <Text style={{ 
-                  color: isFromCache ? '#f59e0b' : '#10b981',
-                  fontSize: '12px',
-                  fontWeight: 500
+                  borderRadius: '8px',
+                  border: `1px solid ${isFromCache ? '#4a3d2a' : '#2a3d4a'}`,
+                  cursor: 'pointer'
                 }}>
-                  {isFromCache ? '缓存数据' : '最新数据'}
-                </Text>
-                <Text style={{ 
-                  color: '#8b8d97',
-                  fontSize: '11px'
-                }}>
-                  {stockCache.formatTimestamp(lastUpdateTime)}
-                </Text>
-              </div>
-            </Tooltip>
-          )}
-          
-          <Space>
-            <Button 
-              type="default" 
-              icon={<ReloadOutlined spin={refreshing} />} 
-              onClick={handleRefresh}
-              loading={refreshing}
-              size="small"
-              style={{
-                background: '#2a2d3a',
-                borderColor: '#3a3d4a',
-                color: '#ffffff'
-              }}
-            >
-              手动刷新
-            </Button>
+                  {isFromCache ? (
+                    <ClockCircleOutlined style={{ color: '#f59e0b', fontSize: '14px' }} />
+                  ) : (
+                    <CheckCircleOutlined style={{ color: '#10b981', fontSize: '14px' }} />
+                  )}
+                  <Text style={{ 
+                    color: isFromCache ? '#f59e0b' : '#10b981',
+                    fontSize: '12px',
+                    fontWeight: 500
+                  }}>
+                    {isFromCache ? '缓存数据' : '最新数据'}
+                  </Text>
+                  <Text style={{ 
+                    color: '#8b8d97',
+                    fontSize: '11px'
+                  }}>
+                    {stockCache.formatTimestamp(lastUpdateTime)}
+                  </Text>
+                </div>
+              </Tooltip>
+            )}
             
-            <Button 
-              type="default" 
-              icon={<ClearOutlined />} 
-              onClick={handleClearCache}
-              size="small"
-              style={{
-                background: '#2a2d3a',
-                borderColor: '#3a3d4a',
-                color: '#ffffff'
-              }}
-            >
-              清空缓存
-            </Button>
+            <Space size="small">
+              <Button 
+                type="default" 
+                icon={<ReloadOutlined spin={refreshing} />} 
+                onClick={handleRefresh}
+                loading={refreshing}
+                size="small"
+                style={{
+                  background: '#2a2d3a',
+                  borderColor: '#3a3d4a',
+                  color: '#ffffff'
+                }}
+              >
+                刷新
+              </Button>
+              
+              <Button 
+                type="default" 
+                icon={<ClearOutlined />} 
+                onClick={handleClearCache}
+                size="small"
+                style={{
+                  background: '#2a2d3a',
+                  borderColor: '#3a3d4a',
+                  color: '#ffffff'
+                }}
+              >
+                清空缓存
+              </Button>
 
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 8,
-              padding: '4px 8px',
-              background: '#2a2d3a',
-              borderRadius: '6px',
-              border: '1px solid #3a3d4a'
-            }}>
-              <Text style={{ color: '#ffffff', fontSize: '12px' }}>
-                自动刷新:
-              </Text>
-              <Switch 
-                size="small" 
-                checked={autoRefresh} 
-                onChange={setAutoRefresh}
-                checkedChildren="开启" 
-                unCheckedChildren="关闭"
-              />
-              {autoRefresh && isTradingTime() && (
-                <Text style={{ color: '#10b981', fontSize: '11px' }}>
-                  (交易时间内每2分钟)
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 8,
+                padding: '4px 8px',
+                background: '#2a2d3a',
+                borderRadius: '6px',
+                border: '1px solid #3a3d4a'
+              }}>
+                <Text style={{ color: '#ffffff', fontSize: '12px' }}>
+                  自动刷新:
                 </Text>
-              )}
-              {autoRefresh && !isTradingTime() && (
-                <Text style={{ color: '#f59e0b', fontSize: '11px' }}>
-                  (非交易时间暂停)
-                </Text>
-              )}
-            </div>
-          </Space>
+                <Switch 
+                  size="small" 
+                  checked={autoRefresh} 
+                  onChange={setAutoRefresh}
+                  checkedChildren="开" 
+                  unCheckedChildren="关"
+                />
+                {autoRefresh && isTradingTime() && (
+                  <Text style={{ color: '#10b981', fontSize: '11px' }}>
+                    (2分钟)
+                  </Text>
+                )}
+                {autoRefresh && !isTradingTime() && (
+                  <Text style={{ color: '#f59e0b', fontSize: '11px' }}>
+                    (暂停)
+                  </Text>
+                )}
+              </div>
+            </Space>
+          </div>
         </div>
       </Header>
 
-      <Content style={{ padding: '36px 24px 24px 24px', background: '#1a1d29' }}> {/* 增加顶部内边距 */}
+      <Content style={{ 
+        marginTop: '80px',
+        padding: '24px 0',
+        background: '#1a1d29',
+        minHeight: 'calc(100vh - 80px)'
+      }}>
         <div className="main-container">
           {/* 统计卡片 */}
           <StatsCards stocks={stocks} loading={loading} />
@@ -506,6 +549,7 @@ const App: React.FC = () => {
                 stocks={stocks} 
                 loading={loading} 
                 onRemoveStock={handleRemoveStock}
+                onDrawerStateChange={handleDrawerStateChange}
               />
             )}
           </Card>

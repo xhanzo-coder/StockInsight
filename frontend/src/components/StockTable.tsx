@@ -10,15 +10,19 @@ import {
   formatDividendRatio,
   formatROE
 } from '../utils/helpers';
+import StockChart from './StockChart';
 
 interface StockTableProps {
   stocks: StockInfo[];
   loading?: boolean;
   onRemoveStock: (code: string) => void;
+  onDrawerStateChange?: (isOpen: boolean) => void;
 }
 
-const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemoveStock }) => {
+const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemoveStock, onDrawerStateChange }) => {
   const [sortedInfo, setSortedInfo] = useState<any>({});
+  const [chartVisible, setChartVisible] = useState(false);
+  const [selectedStock, setSelectedStock] = useState<{ code: string; name: string } | null>(null);
   
   // 调试日志
   console.log('StockTable接收到的stocks数据:', stocks);
@@ -52,6 +56,20 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemo
     }
   };
 
+  // 处理股票名称点击，显示走势图
+  const handleStockNameClick = (code: string, name: string) => {
+    setSelectedStock({ code, name });
+    setChartVisible(true);
+    onDrawerStateChange?.(true);
+  };
+
+  // 关闭走势图
+  const handleChartClose = () => {
+    setChartVisible(false);
+    setSelectedStock(null);
+    onDrawerStateChange?.(false);
+  };
+
   const columns = [
     {
       title: '股票信息',
@@ -63,7 +81,24 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemo
         console.log('股票代码:', record?.code);
         return (
           <div>
-            <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 2, color: '#ffffff' }}>
+            <div 
+              style={{ 
+                fontWeight: 600, 
+                fontSize: '0.9rem', 
+                marginBottom: 2, 
+                color: '#ffffff',
+                cursor: 'pointer',
+                transition: 'color 0.2s ease'
+              }}
+              onClick={() => handleStockNameClick(record?.code || '', record?.name || '')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#60a5fa';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              title="点击查看走势图"
+            >
               {record?.name || '未知股票'}
             </div>
             <div 
@@ -334,38 +369,49 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemo
   };
 
   return (
-    <Table
-      columns={columns}
-      dataSource={stocks}
-      rowKey="code"
-      loading={loading}
-      onChange={handleTableChange}
-      pagination={{
-        pageSize: 20,
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`,
-        style: { color: '#ffffff' }
-      }}
-      scroll={{ x: 1200, y: stocks.length > 10 ? 500 : undefined }}
-      size="middle"
-      style={{ 
-        background: '#222530',
-        borderRadius: '12px'
-      }}
-      onRow={(record) => ({
-        onDoubleClick: () => handleCodeDoubleClick(record.code),
-        onMouseEnter: (e) => {
-          e.currentTarget.style.backgroundColor = '#2a2e3d';
-        },
-        onMouseLeave: (e) => {
-          e.currentTarget.style.backgroundColor = '';
-        }
-      })}
-      sticky={{ offsetHeader: 0 }}
-      showSorterTooltip={false}
-
-    />
+    <>
+      <Table
+        columns={columns}
+        dataSource={stocks}
+        rowKey="code"
+        loading={loading}
+        onChange={handleTableChange}
+        pagination={{
+          pageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`,
+          style: { color: '#ffffff' }
+        }}
+        scroll={{ x: 1200, y: stocks.length > 10 ? 500 : undefined }}
+        size="middle"
+        style={{ 
+          background: '#222530',
+          borderRadius: '12px'
+        }}
+        onRow={(record) => ({
+          onDoubleClick: () => handleCodeDoubleClick(record.code),
+          onMouseEnter: (e) => {
+            e.currentTarget.style.backgroundColor = '#2a2e3d';
+          },
+          onMouseLeave: (e) => {
+            e.currentTarget.style.backgroundColor = '';
+          }
+        })}
+        sticky={{ offsetHeader: 0 }}
+        showSorterTooltip={false}
+      />
+      
+      {/* 股票走势图抽屉 */}
+      {selectedStock && (
+        <StockChart
+          visible={chartVisible}
+          onClose={handleChartClose}
+          stockCode={selectedStock.code}
+          stockName={selectedStock.name}
+        />
+      )}
+    </>
   );
 };
 

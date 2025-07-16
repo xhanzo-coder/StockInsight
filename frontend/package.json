@@ -48,7 +48,6 @@
   "homepage": ".",
   "devDependencies": {
     "@types/file-saver": "^2.0.7",
-    "@types/xlsx": "^0.0.35",
-    "http-proxy-middleware": "^3.0.5"
+    "@types/xlsx": "^0.0.35"
   }
 }

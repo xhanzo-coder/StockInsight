@@ -702,6 +702,387 @@ class StockService:
         """获取股票基本信息（与完整数据相同）"""
         return self.get_stock_complete_data(code)
     
+    def get_stock_history(self, code: str, period: str = '1y') -> Dict[str, Any]:
+        """
+        获取股票历史数据
+        
+        Args:
+            code: 股票代码
+            period: 时间周期 ('1d', '1w', '1m', '3m', '6m', '1y')
+            
+        Returns:
+            包含历史数据和缓存状态的字典: {
+                'data': [{'date': 'YYYY-MM-DD', 'open': float, 'high': float, 'low': float, 'close': float, 'volume': int}],
+                'cache_hit': bool,
+                'count': int,
+                'period': str,
+                'stock_code': str
+            }
+        """
+        try:
+            logger.info(f"获取股票 {code} 历史数据，周期: {period}")
+            
+            # 检查缓存（历史数据缓存30分钟）
+            cache_key = f"stock_history_{code}_{period}"
+            cache_hit = False
+            
+            if self._is_history_cache_valid(cache_key):
+                logger.info(f"使用缓存的历史数据: {code}_{period}")
+                history_data = self.cache[cache_key]['data']
+                cache_hit = True
+            else:
+                # 获取历史数据
+                history_data = self._fetch_stock_history(code, period)
+                
+                if history_data:
+                    # 缓存结果（30分钟）
+                    self._set_history_cache(cache_key, history_data)
+                    logger.info(f"股票 {code} 历史数据获取成功，共 {len(history_data)} 条记录")
+                else:
+                    logger.warning(f"股票 {code} 历史数据获取失败")
+                    history_data = []
+            
+            return {
+                'data': history_data,
+                'cache_hit': cache_hit,
+                'count': len(history_data),
+                'period': period,
+                'stock_code': code
+            }
+                
+        except Exception as e:
+            logger.error(f"获取股票 {code} 历史数据失败: {e}")
+            return {
+                'data': [],
+                'cache_hit': False,
+                'count': 0,
+                'period': period,
+                'stock_code': code
+            }
+    
+    def _fetch_stock_history(self, code: str, period: str) -> List[Dict[str, Any]]:
+        """从多个数据源获取历史数据"""
+        # 方法1: 尝试从腾讯财经获取
+        history_data = self._get_history_from_tencent(code, period)
+        if history_data:
+            return history_data
+        
+        # 方法2: 尝试从新浪财经获取
+        history_data = self._get_history_from_sina(code, period)
+        if history_data:
+            return history_data
+        
+        # 方法3: 尝试从网易财经获取
+        history_data = self._get_history_from_netease(code, period)
+        if history_data:
+            return history_data
+        
+        logger.warning(f"所有数据源都无法获取股票 {code} 的历史数据")
+        return []
+    
+    def _get_history_from_tencent(self, code: str, period: str) -> List[Dict[str, Any]]:
+        """从腾讯财经获取历史数据"""
+        try:
+            # 计算日期范围
+            end_date = datetime.now()
+            start_date = self._calculate_start_date(end_date, period)
+            
+            # 腾讯财经历史数据接口
+            tencent_code = f"sh{code}" if code.startswith('6') else f"sz{code}"
+            url = f"http://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
+            
+            params = {
+                'param': f"{tencent_code},day,{start_date.strftime('%Y-%m-%d')},{end_date.strftime('%Y-%m-%d')},640,qfq",
+                '_var': 'kline_dayqfq'
+            }
+            
+            response = self.session.get(url, params=params, timeout=10)
+            response.encoding = 'utf-8'
+            
+            # 解析响应
+            content = response.text
+            if 'kline_dayqfq=' in content:
+                json_str = content.split('kline_dayqfq=')[1]
+                data = json.loads(json_str)
+                
+                if 'data' in data and tencent_code in data['data']:
+                    kline_data = data['data'][tencent_code]['day']
+                    if kline_data:
+                        return self._parse_tencent_kline_data(kline_data)
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"腾讯财经历史数据获取失败 {code}: {e}")
+            return []
+    
+    def _get_history_from_sina(self, code: str, period: str) -> List[Dict[str, Any]]:
+        """从新浪财经获取历史数据"""
+        try:
+            # 计算日期范围
+            end_date = datetime.now()
+            start_date = self._calculate_start_date(end_date, period)
+            
+            # 新浪财经历史数据接口
+            sina_code = f"sh{code}" if code.startswith('6') else f"sz{code}"
+            url = f"http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData"
+            
+            params = {
+                'symbol': sina_code,
+                'scale': '240',  # 日线
+                'ma': 'no',
+                'datalen': self._get_data_length(period)
+            }
+            
+            response = self.session.get(url, params=params, timeout=10)
+            response.encoding = 'utf-8'
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data and isinstance(data, list):
+                    return self._parse_sina_kline_data(data)
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"新浪财经历史数据获取失败 {code}: {e}")
+            return []
+    
+    def _get_history_from_netease(self, code: str, period: str) -> List[Dict[str, Any]]:
+        """从网易财经获取历史数据"""
+        try:
+            # 计算日期范围
+            end_date = datetime.now()
+            start_date = self._calculate_start_date(end_date, period)
+            
+            # 网易财经历史数据接口
+            netease_code = f"0{code}" if code.startswith('0') or code.startswith('3') else f"1{code}"
+            url = f"http://img1.money.126.net/data/hs/kline/day/history/{datetime.now().year}/{netease_code}.json"
+            
+            response = self.session.get(url, timeout=10)
+            response.encoding = 'utf-8'
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'data' in data and data['data']:
+                    return self._parse_netease_kline_data(data['data'], start_date, end_date)
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"网易财经历史数据获取失败 {code}: {e}")
+            return []
+    
+    def _calculate_start_date(self, end_date: datetime, period: str) -> datetime:
+        """根据周期计算开始日期"""
+        if period == '1d':
+            return end_date - timedelta(days=1)
+        elif period == '1w':
+            return end_date - timedelta(weeks=1)
+        elif period == '1m':
+            return end_date - timedelta(days=30)
+        elif period == '3m':
+            return end_date - timedelta(days=90)
+        elif period == '6m':
+            return end_date - timedelta(days=180)
+        elif period == '1y':
+            return end_date - timedelta(days=365)
+        else:
+            return end_date - timedelta(days=365)  # 默认1年
+    
+    def _get_data_length(self, period: str) -> int:
+        """根据周期获取数据长度"""
+        period_map = {
+            '1d': 1,
+            '1w': 7,
+            '1m': 30,
+            '3m': 90,
+            '6m': 180,
+            '1y': 365
+        }
+        return period_map.get(period, 365)
+    
+    def _parse_tencent_kline_data(self, kline_data: List) -> List[Dict[str, Any]]:
+        """解析腾讯财经K线数据"""
+        try:
+            history_data = []
+            for item in kline_data:
+                if len(item) >= 6:
+                    history_data.append({
+                        'date': item[0],  # 日期
+                        'open': float(item[1]),  # 开盘价
+                        'close': float(item[2]),  # 收盘价
+                        'high': float(item[3]),  # 最高价
+                        'low': float(item[4]),  # 最低价
+                        'volume': int(item[5]) if item[5] else 0  # 成交量
+                    })
+            
+            # 按日期排序
+            history_data.sort(key=lambda x: x['date'])
+            return history_data
+            
+        except Exception as e:
+            logger.error(f"解析腾讯K线数据失败: {e}")
+            return []
+    
+    def _parse_sina_kline_data(self, kline_data: List) -> List[Dict[str, Any]]:
+        """解析新浪财经K线数据"""
+        try:
+            history_data = []
+            for item in kline_data:
+                if isinstance(item, dict):
+                    history_data.append({
+                        'date': item.get('day', ''),
+                        'open': float(item.get('open', 0)),
+                        'close': float(item.get('close', 0)),
+                        'high': float(item.get('high', 0)),
+                        'low': float(item.get('low', 0)),
+                        'volume': int(item.get('volume', 0))
+                    })
+            
+            # 按日期排序
+            history_data.sort(key=lambda x: x['date'])
+            return history_data
+            
+        except Exception as e:
+            logger.error(f"解析新浪K线数据失败: {e}")
+            return []
+    
+    def _parse_netease_kline_data(self, kline_data: List, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+        """解析网易财经K线数据"""
+        try:
+            history_data = []
+            start_str = start_date.strftime('%Y-%m-%d')
+            end_str = end_date.strftime('%Y-%m-%d')
+            
+            for item in kline_data:
+                if len(item) >= 12:
+                    date_str = item[0]
+                    if start_str <= date_str <= end_str:
+                        history_data.append({
+                            'date': date_str,
+                            'open': float(item[1]),  # 开盘价
+                            'high': float(item[2]),  # 最高价
+                            'low': float(item[3]),  # 最低价
+                            'close': float(item[4]),  # 收盘价
+                            'volume': int(item[5]) if item[5] else 0  # 成交量
+                        })
+            
+            # 按日期排序
+            history_data.sort(key=lambda x: x['date'])
+            return history_data
+            
+        except Exception as e:
+            logger.error(f"解析网易K线数据失败: {e}")
+            return []
+    
+    def _is_history_cache_valid(self, cache_key: str) -> bool:
+        """检查历史数据缓存是否有效（30分钟）"""
+        if cache_key not in self.cache:
+            return False
+        
+        cache_time = self.cache[cache_key]['timestamp']
+        # 历史数据缓存30分钟
+        return (datetime.now() - cache_time).seconds < 1800
+    
+    def _set_history_cache(self, cache_key: str, data: Any) -> None:
+        """设置历史数据缓存"""
+        self.cache[cache_key] = {
+            'data': data,
+            'timestamp': datetime.now()
+        }
+    
+    def get_batch_stocks(self, codes: List[str]) -> List[Dict[str, Any]]:
+        """
+        批量获取股票数据
+        
+        Args:
+            codes: 股票代码列表
+            
+        Returns:
+            股票数据列表
+        """
+        try:
+            logger.info(f"批量获取股票数据，共 {len(codes)} 只股票")
+            
+            results = []
+            
+            # 使用线程池并发获取股票数据
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+                # 提交所有任务
+                future_to_code = {executor.submit(self.get_stock_complete_data, code): code for code in codes}
+                
+                # 收集结果
+                for future in concurrent.futures.as_completed(future_to_code):
+                    code = future_to_code[future]
+                    try:
+                        stock_data = future.result(timeout=10)  # 10秒超时
+                        if stock_data:
+                            results.append(stock_data)
+                    except Exception as e:
+                        logger.error(f"批量获取股票数据失败 {code}: {e}")
+            
+            logger.info(f"批量获取完成，成功获取 {len(results)} 只股票数据")
+            return results
+            
+        except Exception as e:
+            logger.error(f"批量获取股票数据失败: {e}")
+            return []
+    
+    def get_market_overview(self) -> Optional[Dict[str, Any]]:
+        """
+        获取市场概览数据
+        
+        Returns:
+            市场概览数据
+        """
+        try:
+            logger.info("获取市场概览数据")
+            
+            # 检查缓存
+            cache_key = "market_overview"
+            if self._is_cache_valid(cache_key):
+                logger.info("使用缓存的市场概览数据")
+                return self.cache[cache_key]['data']
+            
+            # 获取主要指数数据
+            indices = ['sh000001', 'sz399001', 'sz399006']  # 上证指数、深证成指、创业板指
+            market_data = {}
+            
+            for index_code in indices:
+                try:
+                    eq_data = self.eq_sina.real([index_code], prefix=True)
+                    for key, value in eq_data.items():
+                        if index_code in key:
+                            name = value.get('name', '')
+                            current = value.get('now', 0)
+                            yesterday_close = value.get('close', 0)
+                            change_amount = current - yesterday_close if yesterday_close > 0 else 0
+                            change_percent = (change_amount / yesterday_close * 100) if yesterday_close > 0 else 0
+                            
+                            market_data[index_code] = {
+                                'name': name,
+                                'current': current,
+                                'change_amount': round(change_amount, 2),
+                                'change_percent': round(change_percent, 2)
+                            }
+                            break
+                except Exception as e:
+                    logger.error(f"获取指数 {index_code} 数据失败: {e}")
+            
+            if market_data:
+                # 缓存结果
+                self._set_cache(cache_key, market_data)
+                logger.info("市场概览数据获取成功")
+                return market_data
+            else:
+                logger.warning("市场概览数据获取失败")
+                return None
+                
+        except Exception as e:
+            logger.error(f"获取市场概览失败: {e}")
+            return None
+
     def add_to_watchlist(self, code: str, industry: str = '') -> bool:
         """添加到关注列表（简化实现）"""
         try:
