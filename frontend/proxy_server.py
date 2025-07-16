@@ -163,7 +163,7 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
 
 def main():
     """主函数"""
-    PORT = 3001
+    PORT = 3000
     BACKEND_PORT = 5000
     
     # 检查build目录是否存在

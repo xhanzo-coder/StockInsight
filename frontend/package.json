@@ -12,12 +12,14 @@
     "@types/react-dom": "^18.0.6",
     "antd": "^5.12.8",
     "axios": "^1.6.2",
+    "file-saver": "^2.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "recharts": "^2.8.0",
     "typescript": "^4.7.4",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -45,6 +47,8 @@
   },
   "homepage": ".",
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
+    "@types/xlsx": "^0.0.35",
     "http-proxy-middleware": "^3.0.5"
   }
 }

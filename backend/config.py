@@ -45,9 +45,9 @@ class Config:
     LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     
     # CORS配置
-    CORS_ORIGINS = '*'
+    CORS_ORIGINS = ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001']
     CORS_METHODS = ['GET', 'POST', 'DELETE', 'OPTIONS']
-    CORS_HEADERS = ['Content-Type', 'Authorization']
+    CORS_HEADERS = ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin']
     
     # AKShare配置
     AKSHARE_TIMEOUT = 30  # 请求超时时间（秒）

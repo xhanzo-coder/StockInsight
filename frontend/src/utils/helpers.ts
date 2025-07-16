@@ -191,11 +191,55 @@ export const calculateStats = (stocks: any[]) => {
       qualityCount: 0,
       risingCount: 0,
       fallingCount: 0,
+      flatCount: 0,
+      avgChangePercent: 0,
+      strongStocks: 0,
+      strongStocksList: [],
+      maxChangePercent: 0,
+      minChangePercent: 0,
       avgROE: 0,
       lastUpdate: new Date().toLocaleTimeString('zh-CN', { hour12: false })
     };
   }
 
+  // 涨跌分布统计
+  const risingCount = stocks.filter(stock => 
+    stock.change_percent && stock.change_percent > 0
+  ).length;
+
+  const fallingCount = stocks.filter(stock => 
+    stock.change_percent && stock.change_percent < 0
+  ).length;
+
+  const flatCount = stocks.filter(stock => 
+    stock.change_percent === 0
+  ).length;
+
+  // 平均涨跌幅计算
+  const validChangePercents = stocks
+    .map(s => s.change_percent)
+    .filter(cp => cp !== null && cp !== undefined && !isNaN(cp));
+  
+  const avgChangePercent = validChangePercents.length > 0 
+    ? validChangePercents.reduce((sum, cp) => sum + cp, 0) / validChangePercents.length 
+    : 0;
+
+  // 最高和最低涨跌幅
+  const maxChangePercent = validChangePercents.length > 0 
+    ? Math.max(...validChangePercents) 
+    : 0;
+  
+  const minChangePercent = validChangePercents.length > 0 
+    ? Math.min(...validChangePercents) 
+    : 0;
+
+  // 强势股统计（涨幅超过5%）
+  const strongStocksList = stocks.filter(stock => 
+    stock.change_percent && stock.change_percent > 5
+  );
+  const strongStocks = strongStocksList.length;
+
+  // 保留原有统计
   const validPEs = stocks
     .map(s => s.pe_ratio_ttm)
     .filter(pe => pe !== null && pe !== undefined && !isNaN(pe));
@@ -216,14 +260,6 @@ export const calculateStats = (stocks: any[]) => {
     isQualityStock(stock.pe_ratio_ttm, stock.roe)
   ).length;
 
-  const risingCount = stocks.filter(stock => 
-    stock.change_percent && stock.change_percent > 0
-  ).length;
-
-  const fallingCount = stocks.filter(stock => 
-    stock.change_percent && stock.change_percent < 0
-  ).length;
-
   return {
     totalCount: stocks.length,
     avgPE: Number(avgPE.toFixed(1)),
@@ -231,6 +267,12 @@ export const calculateStats = (stocks: any[]) => {
     qualityCount,
     risingCount,
     fallingCount,
+    flatCount,
+    avgChangePercent: Number(avgChangePercent.toFixed(2)),
+    strongStocks,
+    strongStocksList: strongStocksList.map(s => ({ name: s.name, code: s.code, change_percent: s.change_percent })),
+    maxChangePercent: Number(maxChangePercent.toFixed(2)),
+    minChangePercent: Number(minChangePercent.toFixed(2)),
     lastUpdate: new Date().toLocaleTimeString('zh-CN', { hour12: false })
   };
 };

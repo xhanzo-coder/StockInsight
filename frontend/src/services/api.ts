@@ -1,13 +1,14 @@
 import axios from 'axios';
-import { frontendCache } from '../utils/cache';
+import { stockCache, CACHE_KEYS } from '../utils/stockCache';
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api',
-  timeout: 10000,
+  baseURL: 'http://localhost:5000/api', // 直接连接后端，绕过代理问题
+  timeout: 10000, // 10秒超时
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false,
 });
 
 // 请求拦截器
@@ -118,30 +119,16 @@ class ApiService {
 
   // 获取关注列表
   async getWatchlist(forceRefresh: boolean = false): Promise<ApiResponse<StockInfo[]>> {
-    const cacheKey = 'watchlist';
-    
-    if (!forceRefresh) {
-      const cached = frontendCache.get<ApiResponse<StockInfo[]>>(cacheKey);
-      if (cached) {
-        console.log('使用缓存的关注列表数据');
-        return cached;
-      }
-    }
-    
     const response = await api.get('/watchlist');
-    const data = response.data;
-    
-    // 缓存2分钟
-    frontendCache.set(cacheKey, data, 2 * 60 * 1000);
-    
-    return data;
+    return response.data;
   }
 
   // 搜索股票
   async searchStocks(keyword: string, limit: number = 10): Promise<ApiResponse<SearchResult[]>> {
-    const cacheKey = `search_${keyword}_${limit}`;
-    const cached = frontendCache.get<ApiResponse<SearchResult[]>>(cacheKey);
+    const cacheKey = CACHE_KEYS.SEARCH_RESULTS(keyword);
     
+    // 检查缓存
+    const cached = stockCache.get<ApiResponse<SearchResult[]>>(cacheKey);
     if (cached) {
       console.log(`使用缓存的搜索结果: ${keyword}`);
       return cached;
@@ -152,24 +139,58 @@ class ApiService {
     });
     const data = response.data;
     
-    // 缓存5分钟
-    frontendCache.set(cacheKey, data, 5 * 60 * 1000);
+    // 缓存搜索结果 - 统一使用5分钟缓存时间
+    stockCache.set(cacheKey, data, {
+      tradingCacheDuration: 5,
+      nonTradingCacheDuration: 5
+    });
     
     return data;
   }
 
   // 获取股票详情
   async getStockDetail(code: string): Promise<ApiResponse<StockDetail>> {
+    const cacheKey = CACHE_KEYS.STOCK_DETAIL(code);
+    
+    // 检查缓存
+    const cached = stockCache.get<ApiResponse<StockDetail>>(cacheKey);
+    if (cached) {
+      console.log(`使用缓存的股票详情: ${code}`);
+      return cached;
+    }
+    
     const response = await api.get(`/stocks/${code}`);
-    return response.data;
+    const data = response.data;
+    
+    // 缓存股票详情
+    stockCache.set(cacheKey, data);
+    
+    return data;
   }
 
   // 获取股票历史数据
   async getStockHistory(code: string, period: string = '1y'): Promise<ApiResponse<HistoryData[]>> {
+    const cacheKey = CACHE_KEYS.STOCK_HISTORY(code, period);
+    
+    // 检查缓存
+    const cached = stockCache.get<ApiResponse<HistoryData[]>>(cacheKey);
+    if (cached) {
+      console.log(`使用缓存的历史数据: ${code} - ${period}`);
+      return cached;
+    }
+    
     const response = await api.get(`/stocks/${code}/history`, {
       params: { period }
     });
-    return response.data;
+    const data = response.data;
+    
+    // 缓存历史数据（历史数据相对稳定，可以缓存更长时间）
+    stockCache.set(cacheKey, data, {
+      tradingCacheDuration: 10,
+      nonTradingCacheDuration: 60
+    });
+    
+    return data;
   }
 
   // 批量获取股票数据
@@ -192,8 +213,22 @@ class ApiService {
 
   // 获取市场概览
   async getMarketOverview(): Promise<ApiResponse<any>> {
+    const cacheKey = CACHE_KEYS.MARKET_OVERVIEW;
+    
+    // 检查缓存
+    const cached = stockCache.get<ApiResponse<any>>(cacheKey);
+    if (cached) {
+      console.log('使用缓存的市场概览数据');
+      return cached;
+    }
+    
     const response = await api.get('/market/overview');
-    return response.data;
+    const data = response.data;
+    
+    // 缓存市场概览
+    stockCache.set(cacheKey, data);
+    
+    return data;
   }
 
   // 清空缓存

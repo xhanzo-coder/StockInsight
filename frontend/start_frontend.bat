@@ -6,7 +6,7 @@ echo ========================================
 echo.
 echo 💡 使用说明:
 echo    1. 确保后端已启动 (python app.py)
-echo    2. 在浏览器访问: http://localhost:3001
+echo    2. 在浏览器访问: http://localhost:3000
 echo    3. 按 Ctrl+C 停止服务器
 echo.
 echo ========================================
