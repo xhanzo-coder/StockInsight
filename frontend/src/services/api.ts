@@ -53,6 +53,7 @@ export interface StockInfo {
   theoretical_price: number;
   added_time: string;
   updated_time: string;
+  is_pinned?: boolean;
 }
 
 export interface StockDetail {
@@ -208,6 +209,12 @@ class ApiService {
   // 从关注列表删除股票
   async removeFromWatchlist(code: string): Promise<ApiResponse<any>> {
     const response = await api.delete(`/watchlist/${code}`);
+    return response.data;
+  }
+
+  // 切换股票置顶状态
+  async togglePinStock(code: string): Promise<ApiResponse<{ code: string; is_pinned: boolean }>> {
+    const response = await api.post(`/watchlist/${code}/pin`);
     return response.data;
   }
 

@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
-import { Table, Button, Popconfirm, message, Tooltip } from 'antd';
-import { DeleteOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import { StockInfo } from '../services/api';
-import { 
-  formatPrice, 
-  formatPercent, 
-  formatNumber, 
-  formatMarketCap,
-  formatDividendRatio,
-  formatROE
-} from '../utils/helpers';
+import { Table, Button, message, Tooltip, Space } from 'antd';
+import { DeleteOutlined, BarChartOutlined, PushpinOutlined, PushpinFilled } from '@ant-design/icons';
+import type { ColumnsType, TableProps } from 'antd/es/table';
+import { StockInfo, apiService } from '../services/api';
 import StockChart from './StockChart';
 
 interface StockTableProps {
@@ -17,42 +10,74 @@ interface StockTableProps {
   loading?: boolean;
   onRemoveStock: (code: string) => void;
   onDrawerStateChange?: (isOpen: boolean) => void;
+  onRefresh?: () => void;
 }
 
-const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemoveStock, onDrawerStateChange }) => {
-  const [sortedInfo, setSortedInfo] = useState<any>({});
+const StockTable: React.FC<StockTableProps> = ({ 
+  stocks, 
+  loading = false, 
+  onRemoveStock,
+  onDrawerStateChange,
+  onRefresh 
+}) => {
   const [chartVisible, setChartVisible] = useState(false);
   const [selectedStock, setSelectedStock] = useState<{ code: string; name: string } | null>(null);
-  
-  // 调试日志
-  console.log('StockTable接收到的stocks数据:', stocks);
-  console.log('stocks数组长度:', stocks.length);
-  if (stocks.length > 0) {
-    console.log('第一条股票数据:', stocks[0]);
-    console.log('第一条股票的name字段:', stocks[0]?.name);
-  }
+  const [pinLoading, setPinLoading] = useState<string>(''); // 记录正在切换置顶状态的股票代码
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
-  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
-    setSortedInfo(sorter);
+  // 计算动态表格高度
+  const getTableHeight = () => {
+    // 基础高度：表头(40px) + 每行(40px) + 底部间距(20px)
+    const headerHeight = 40;
+    const rowHeight = 40;
+    const bottomPadding = 20;
+    const calculatedHeight = headerHeight + (pageSize * rowHeight) + bottomPadding;
+    
+    // 设置最小高度和最大高度
+    const minHeight = 200;
+    const maxHeight = 600;
+    
+    return Math.max(minHeight, Math.min(maxHeight, calculatedHeight));
   };
-  
+
   // 自定义排序图标
-  const customSorterIcon = (sortOrder: 'ascend' | 'descend' | undefined | null) => {
+  const CustomSortIcon = ({ sortOrder }: { sortOrder?: 'ascend' | 'descend' | null }) => {
     if (sortOrder === 'ascend') {
-      return <ArrowUpOutlined style={{ color: '#1890ff' }} />;
+      return <span style={{ color: '#1890ff' }}>↑</span>;
     }
     if (sortOrder === 'descend') {
-      return <ArrowDownOutlined style={{ color: '#1890ff' }} />;
+      return <span style={{ color: '#1890ff' }}>↓</span>;
     }
-    return null;
+    return <span style={{ color: '#bfbfbf' }}>↕</span>;
   };
 
-  const handleRemove = async (code: string, name: string) => {
+  // 处理股票移除
+  const handleRemove = async (code: string) => {
     try {
       await onRemoveStock(code);
-      // 成功消息已在App组件中处理
     } catch (error) {
+      console.error('移除股票失败:', error);
       message.error('移除失败，请重试');
+    }
+  };
+
+  // 处理股票置顶切换
+  const handleTogglePin = async (code: string) => {
+    setPinLoading(code);
+    try {
+      const response = await apiService.togglePinStock(code);
+      if (response.success) {
+        message.success(response.message);
+        onRefresh?.(); // 刷新列表以更新排序
+      } else {
+        message.error(response.error || '操作失败');
+      }
+    } catch (error) {
+      console.error('切换置顶状态失败:', error);
+      message.error('操作失败，请重试');
+    } finally {
+      setPinLoading('');
     }
   };
 
@@ -70,95 +95,88 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemo
     onDrawerStateChange?.(false);
   };
 
-  const columns = [
+  // 双击股票代码复制到剪贴板
+  const handleCodeDoubleClick = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      message.success(`股票代码 ${code} 已复制到剪贴板`);
+    } catch (error) {
+      console.error('复制失败:', error);
+      message.error('复制失败');
+    }
+  };
+
+  // 表格列定义
+  const columns: ColumnsType<StockInfo> = [
     {
       title: '股票信息',
-      key: 'info',
+      key: 'stock_info',
       width: 180,
-      render: (record: StockInfo) => {
-        console.log('渲染股票信息:', record);
-        console.log('股票名称:', record?.name);
-        console.log('股票代码:', record?.code);
-        return (
-          <div>
-            <div 
-              style={{ 
-                fontWeight: 600, 
-                fontSize: '0.9rem', 
-                marginBottom: 2, 
-                color: '#ffffff',
-                cursor: 'pointer',
-                transition: 'color 0.2s ease'
-              }}
-              onClick={() => handleStockNameClick(record?.code || '', record?.name || '')}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#60a5fa';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#ffffff';
-              }}
-              title="点击查看走势图"
-            >
-              {record?.name || '未知股票'}
-            </div>
-            <div 
-              style={{ 
-                color: '#8b8d97', 
-                fontSize: '0.8rem',
-                cursor: 'pointer'
-              }}
-              title="双击复制股票代码"
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                handleCodeDoubleClick(record?.code || '');
-              }}
-            >
-              {record?.code || '000000'}
-            </div>
+      fixed: 'left',
+      render: (_, record) => (
+        <div>
+          <div 
+            style={{ 
+              fontWeight: 'bold', 
+              cursor: 'pointer',
+              color: '#1890ff',
+              marginBottom: '2px'
+            }}
+            onClick={() => handleStockNameClick(record.code, record.name)}
+            title="点击查看走势图"
+          >
+            {record.name}
           </div>
-        );
-      },
+          <div 
+            style={{ 
+              fontSize: '12px', 
+              color: '#666',
+              cursor: 'pointer'
+            }}
+            onDoubleClick={() => handleCodeDoubleClick(record.code)}
+            title="双击复制代码"
+          >
+            {record.code}
+          </div>
+          <div style={{ fontSize: '11px', color: '#999' }}>
+            {record.industry}
+          </div>
+        </div>
+      ),
     },
     {
       title: '当前价格',
       dataIndex: 'current_price',
       key: 'current_price',
       width: 100,
-      sorter: (a: StockInfo, b: StockInfo) => (a.current_price || 0) - (b.current_price || 0),
-      sortOrder: sortedInfo.columnKey === 'current_price' ? sortedInfo.order : null,
-      render: (price: number, record: StockInfo) => {
-        console.log('渲染当前价格:', price, record);
-        return (
-          <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-            {formatPrice(price || 0)}
-          </span>
-        );
-      },
+      align: 'right',
+      sorter: (a, b) => (a.current_price || 0) - (b.current_price || 0),
+      sortIcon: CustomSortIcon,
+      render: (value) => value ? `¥${value.toFixed(2)}` : '-',
     },
     {
       title: '涨跌幅',
-      dataIndex: 'change_percent',
-      key: 'change_percent',
-      width: 100,
-      sorter: (a: StockInfo, b: StockInfo) => (a.change_percent || 0) - (b.change_percent || 0),
-      sortOrder: sortedInfo.columnKey === 'change_percent' ? sortedInfo.order : null,
-      render: (percent: number, record: StockInfo) => {
-        const isBold = Math.abs(percent) > 5;
-        const percentClass = `${percent > 0 ? 'percent-up' : percent < 0 ? 'percent-down' : ''} ${isBold ? 'percent-bold' : ''}`;
+      key: 'change',
+      width: 120,
+      align: 'right',
+      sorter: (a, b) => (a.change_percent || 0) - (b.change_percent || 0),
+      sortIcon: CustomSortIcon,
+      render: (_, record) => {
+        const changePercent = record.change_percent;
+        const changeAmount = record.change_amount;
+        if (changePercent === null || changePercent === undefined) return '-';
+        
+        const color = changePercent > 0 ? '#f5222d' : changePercent < 0 ? '#52c41a' : '#666';
+        const prefix = changePercent > 0 ? '+' : '';
         
         return (
-          <div>
-            <div className={percentClass} style={{ 
-              display: 'flex',
-              alignItems: 'center'
-            }}>
-              {percent > 0 ? <ArrowUpOutlined style={{ marginRight: 4 }} /> : 
-               percent < 0 ? <ArrowDownOutlined style={{ marginRight: 4 }} /> : null}
-              {formatPercent(percent)}
-            </div>
-            <div className={percent > 0 ? 'percent-up' : percent < 0 ? 'percent-down' : ''} style={{ fontSize: '0.8rem' }}>
-              {formatPrice(record.change_amount)}
-            </div>
+          <div style={{ color }}>
+            <div>{prefix}{changePercent.toFixed(2)}%</div>
+            {changeAmount && (
+              <div style={{ fontSize: '11px' }}>
+                {prefix}{changeAmount.toFixed(2)}
+              </div>
+            )}
           </div>
         );
       },
@@ -168,247 +186,237 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, loading = false, onRemo
       dataIndex: 'market_cap',
       key: 'market_cap',
       width: 100,
-      className: 'hide-mobile',
-      sorter: (a: StockInfo, b: StockInfo) => {
-        const aValue = typeof a.market_cap === 'string' ? parseFloat(a.market_cap.replace(/[^\d.]/g, '')) || 0 : a.market_cap || 0;
-        const bValue = typeof b.market_cap === 'string' ? parseFloat(b.market_cap.replace(/[^\d.]/g, '')) || 0 : b.market_cap || 0;
-        return aValue - bValue;
+      align: 'right',
+      sorter: (a, b) => {
+        const getNumericValue = (cap: string) => {
+          if (!cap || cap === '-') return 0;
+          const num = parseFloat(cap.replace(/[^\d.]/g, ''));
+          if (cap.includes('万亿')) return num * 10000;
+          if (cap.includes('千亿')) return num * 1000;
+          if (cap.includes('亿')) return num;
+          return num / 100;
+        };
+        return getNumericValue(a.market_cap || '') - getNumericValue(b.market_cap || '');
       },
-      sortOrder: sortedInfo.columnKey === 'market_cap' ? sortedInfo.order : null,
-      render: (marketCap: string, record: StockInfo) => {
-        console.log('渲染市值:', marketCap, record);
-        return (
-          <span style={{ fontSize: '0.9rem' }}>
-            {formatMarketCap(marketCap || '0')}
-          </span>
-        );
-      },
+      sortIcon: CustomSortIcon,
+      render: (value) => value || '-',
     },
     {
       title: '市赚率',
       dataIndex: 'market_earning_ratio',
       key: 'market_earning_ratio',
-      width: 80,
-      className: 'hide-mobile',
-      sorter: (a: StockInfo, b: StockInfo) => (a.market_earning_ratio || 0) - (b.market_earning_ratio || 0),
-      sortOrder: sortedInfo.columnKey === 'market_earning_ratio' ? sortedInfo.order : null,
-      render: (ratio: number, record: StockInfo) => {
-        console.log('渲染市赚率:', ratio, record);
-        return (
-          <span style={{ fontSize: '0.9rem' }}>
-            {formatNumber(ratio || 0)}
-          </span>
-        );
-      },
+      width: 90,
+      align: 'right',
+      sorter: (a, b) => (a.market_earning_ratio || 0) - (b.market_earning_ratio || 0),
+      sortIcon: CustomSortIcon,
+      render: (value) => value ? value.toFixed(2) : '-',
     },
     {
-      title: 'TTM市盈率',
+      title: (
+        <Tooltip title="TTM市盈率">
+          <span style={{ whiteSpace: 'nowrap' }}>TTM市盈率</span>
+        </Tooltip>
+      ),
       dataIndex: 'pe_ratio_ttm',
       key: 'pe_ratio_ttm',
       width: 100,
-      sorter: (a: StockInfo, b: StockInfo) => (a.pe_ratio_ttm || 0) - (b.pe_ratio_ttm || 0),
-      sortOrder: sortedInfo.columnKey === 'pe_ratio_ttm' ? sortedInfo.order : null,
-      render: (pe: number, record: StockInfo) => {
-        console.log('渲染TTM市盈率:', pe, record);
-        return (
-          <span style={{ 
-            color: pe && pe < 15 ? '#22c55e' : pe && pe > 30 ? '#ef4444' : '#ffffff',
-            fontSize: '0.9rem'
-          }}>
-            {formatNumber(pe || 0)}
-          </span>
-        );
-      },
+      align: 'right',
+      sorter: (a, b) => (a.pe_ratio_ttm || 0) - (b.pe_ratio_ttm || 0),
+      sortIcon: CustomSortIcon,
+      render: (value) => value ? value.toFixed(2) : '-',
     },
     {
       title: 'ROE',
       dataIndex: 'roe',
       key: 'roe',
       width: 80,
-      sorter: (a: StockInfo, b: StockInfo) => {
-        const aValue = typeof a.roe === 'string' ? parseFloat(a.roe) || 0 : a.roe || 0;
-        const bValue = typeof b.roe === 'string' ? parseFloat(b.roe) || 0 : b.roe || 0;
+      align: 'right',
+      sorter: (a, b) => {
+        const aValue = typeof a.roe === 'number' ? a.roe : 0;
+        const bValue = typeof b.roe === 'number' ? b.roe : 0;
         return aValue - bValue;
       },
-      sortOrder: sortedInfo.columnKey === 'roe' ? sortedInfo.order : null,
-      render: (roe: number, record: StockInfo) => {
-        console.log('渲染ROE:', roe, record);
-        return (
-          <span style={{ 
-            color: roe && roe > 15 ? '#22c55e' : roe && roe < 5 ? '#ef4444' : '#ffffff',
-            fontSize: '0.9rem'
-          }}>
-            {formatROE(roe || 0)}
-          </span>
-        );
+      sortIcon: CustomSortIcon,
+      render: (value) => {
+        if (typeof value === 'number') {
+          return `${(value * 100).toFixed(2)}%`;
+        }
+        return value || '-';
       },
     },
     {
       title: '市净率',
       dataIndex: 'pb_ratio',
       key: 'pb_ratio',
-      width: 80,
-      className: 'hide-mobile',
-      sorter: (a: StockInfo, b: StockInfo) => (a.pb_ratio || 0) - (b.pb_ratio || 0),
-      sortOrder: sortedInfo.columnKey === 'pb_ratio' ? sortedInfo.order : null,
-      render: (pb: number) => (
-        <span style={{ fontSize: '0.9rem' }}>
-          {formatNumber(pb)}
-        </span>
-      ),
-    },
-    {
-      title: '股利支付率',
-      dataIndex: 'dividend_payout_ratio',
-      key: 'dividend_payout_ratio',
-      width: 100,
-      className: 'hide-mobile',
-      sorter: (a: StockInfo, b: StockInfo) => {
-        const aValue = typeof a.dividend_payout_ratio === 'string' ? parseFloat(a.dividend_payout_ratio) || 0 : a.dividend_payout_ratio || 0;
-        const bValue = typeof b.dividend_payout_ratio === 'string' ? parseFloat(b.dividend_payout_ratio) || 0 : b.dividend_payout_ratio || 0;
-        return aValue - bValue;
-      },
-      sortOrder: sortedInfo.columnKey === 'dividend_payout_ratio' ? sortedInfo.order : null,
-      render: (ratio: number) => (
-        <span style={{ fontSize: '0.9rem' }}>
-          {formatDividendRatio(ratio)}
-        </span>
-      ),
+      width: 90,
+      align: 'right',
+      sorter: (a, b) => (a.pb_ratio || 0) - (b.pb_ratio || 0),
+      sortIcon: CustomSortIcon,
+      render: (value) => value ? value.toFixed(2) : '-',
     },
     {
       title: (
-        <Tooltip title="修正系数 = 当前价格 / 理论股价">
-          修正系数
+        <Tooltip title="股利支付率">
+          <span style={{ whiteSpace: 'nowrap' }}>股利支付率</span>
         </Tooltip>
       ),
+      dataIndex: 'dividend_payout_ratio',
+      key: 'dividend_payout_ratio',
+      width: 110,
+      align: 'right',
+      sorter: (a, b) => {
+        const aValue = typeof a.dividend_payout_ratio === 'number' ? a.dividend_payout_ratio : 0;
+        const bValue = typeof b.dividend_payout_ratio === 'number' ? b.dividend_payout_ratio : 0;
+        return aValue - bValue;
+      },
+      sortIcon: CustomSortIcon,
+      render: (value) => {
+        if (typeof value === 'number') {
+          return `${(value * 100).toFixed(2)}%`;
+        }
+        return value || '-';
+      },
+    },
+    {
+      title: '修正系数',
       dataIndex: 'correction_factor',
       key: 'correction_factor',
       width: 100,
-      className: 'hide-mobile',
-      sorter: (a: StockInfo, b: StockInfo) => (a.correction_factor || 0) - (b.correction_factor || 0),
-      sortOrder: sortedInfo.columnKey === 'correction_factor' ? sortedInfo.order : null,
-      render: (factor: number) => (
-        <span style={{ 
-          color: factor && factor < 0.8 ? '#22c55e' : factor && factor > 1.2 ? '#ef4444' : '#ffffff',
-          fontSize: '0.9rem'
-        }}>
-          {formatNumber(factor)}
-        </span>
-      ),
+      align: 'right',
+      sorter: (a, b) => (a.correction_factor || 0) - (b.correction_factor || 0),
+      sortIcon: CustomSortIcon,
+      render: (value) => value ? value.toFixed(2) : '-',
     },
     {
       title: (
-        <Tooltip title="修正市赚率 = 修正系数 × 市赚率">
-          修正市赚率
+        <Tooltip title="修正市赚率">
+          <span style={{ whiteSpace: 'nowrap' }}>修正市赚率</span>
         </Tooltip>
       ),
       dataIndex: 'corrected_market_earning_ratio',
       key: 'corrected_market_earning_ratio',
-      width: 100,
-      sorter: (a: StockInfo, b: StockInfo) => (a.corrected_market_earning_ratio || 0) - (b.corrected_market_earning_ratio || 0),
-      sortOrder: sortedInfo.columnKey === 'corrected_market_earning_ratio' ? sortedInfo.order : null,
-      render: (ratio: number) => (
-        <span style={{ 
-          color: ratio && ratio < 1.2 ? '#22c55e' : ratio && ratio > 2.5 ? '#ef4444' : '#ffffff',
-          fontSize: '0.9rem'
-        }}>
-          {formatNumber(ratio)}
-        </span>
-      ),
+      width: 110,
+      align: 'right',
+      sorter: (a, b) => (a.corrected_market_earning_ratio || 0) - (b.corrected_market_earning_ratio || 0),
+      sortIcon: CustomSortIcon,
+      render: (value) => value ? value.toFixed(2) : '-',
     },
     {
       title: '理论股价',
       dataIndex: 'theoretical_price',
       key: 'theoretical_price',
       width: 100,
-      className: 'hide-mobile',
-      sorter: (a: StockInfo, b: StockInfo) => (a.theoretical_price || 0) - (b.theoretical_price || 0),
-      sortOrder: sortedInfo.columnKey === 'theoretical_price' ? sortedInfo.order : null,
-      render: (price: number) => (
-        <span style={{ fontSize: '0.9rem' }}>
-          {formatPrice(price)}
-        </span>
-      ),
+      align: 'right',
+      sorter: (a, b) => (a.theoretical_price || 0) - (b.theoretical_price || 0),
+      sortIcon: CustomSortIcon,
+      render: (value) => value ? `¥${value.toFixed(2)}` : '-',
     },
     {
       title: '操作',
       key: 'action',
-      width: 80,
-      fixed: 'right' as const,
-      render: (record: StockInfo) => (
-        <Popconfirm
-          title="确定要移除这只股票吗？"
-          onConfirm={() => handleRemove(record.code, record.name)}
-          okText="确定"
-          cancelText="取消"
-          okButtonProps={{ danger: true }}
-        >
-          <Button 
-            type="text" 
-            danger 
-            size="small"
-            icon={<DeleteOutlined />}
-            className="table-action-btn"
-          >
-            移除
-          </Button>
-        </Popconfirm>
+      width: 120,
+      fixed: 'right',
+      render: (_, record) => (
+        <Space size="small">
+          <Tooltip title={record.is_pinned ? "取消置顶" : "置顶"}>
+            <Button
+              type="text"
+              size="small"
+              icon={record.is_pinned ? <PushpinFilled /> : <PushpinOutlined />}
+              loading={pinLoading === record.code}
+              onClick={() => handleTogglePin(record.code)}
+              style={{ 
+                color: record.is_pinned ? '#f5222d' : '#666',
+                padding: '0 4px'
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="查看走势图">
+            <Button
+              type="text"
+              size="small"
+              icon={<BarChartOutlined />}
+              onClick={() => handleStockNameClick(record.code, record.name)}
+              style={{ color: '#1890ff', padding: '0 4px' }}
+            />
+          </Tooltip>
+          <Tooltip title="移除">
+            <Button
+              type="text"
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleRemove(record.code)}
+              style={{ padding: '0 4px' }}
+            />
+          </Tooltip>
+        </Space>
       ),
     },
   ];
 
-  // 处理双击股票代码复制到剪贴板
-  const handleCodeDoubleClick = (code: string) => {
-    navigator.clipboard.writeText(code)
-      .then(() => {
-        message.success(`股票代码 ${code} 已复制到剪贴板`);
-      })
-      .catch(() => {
-        message.error('复制失败，请手动复制');
-      });
+  // 表格配置
+  const tableProps: TableProps<StockInfo> = {
+    columns,
+    dataSource: stocks,
+    loading,
+    rowKey: 'code',
+    size: 'small',
+    scroll: { x: 1400, y: getTableHeight() },
+    pagination: {
+      current: currentPage,
+      pageSize: pageSize,
+      showSizeChanger: true,
+      showQuickJumper: true,
+      showTotal: (total, range) => (
+        <span style={{ color: '#8b8d97' }}>
+          第 {range[0]}-{range[1]} 条，共 {total} 条
+        </span>
+      ),
+      pageSizeOptions: ['10', '20', '50', '100'],
+      size: 'default',
+      className: 'custom-pagination',
+      style: {
+        marginTop: '16px',
+        textAlign: 'center',
+      },
+      onChange: (page, size) => {
+        console.log('分页变化:', { page, size });
+        setCurrentPage(page);
+        if (size !== pageSize) {
+          setPageSize(size);
+          setCurrentPage(1); // 改变页面大小时重置到第一页
+        }
+      },
+      onShowSizeChange: (current, size) => {
+        console.log('页面大小变化:', { current, size });
+        setPageSize(size);
+        setCurrentPage(1); // 改变页面大小时重置到第一页
+      },
+    },
+    style: {
+      backgroundColor: '#2a2d3a',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      border: '1px solid #3a3d4a',
+    },
+    onRow: (record) => ({
+      onDoubleClick: () => {
+        handleStockNameClick(record.code, record.name);
+      },
+    }),
   };
 
   return (
     <>
-      <Table
-        columns={columns}
-        dataSource={stocks}
-        rowKey="code"
-        loading={loading}
-        onChange={handleTableChange}
-        pagination={{
-          pageSize: 20,
-          showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`,
-          style: { color: '#ffffff' }
-        }}
-        scroll={{ x: 1200, y: stocks.length > 10 ? 500 : undefined }}
-        size="middle"
-        style={{ 
-          background: '#222530',
-          borderRadius: '12px'
-        }}
-        onRow={(record) => ({
-          onDoubleClick: () => handleCodeDoubleClick(record.code),
-          onMouseEnter: (e) => {
-            e.currentTarget.style.backgroundColor = '#2a2e3d';
-          },
-          onMouseLeave: (e) => {
-            e.currentTarget.style.backgroundColor = '';
-          }
-        })}
-        sticky={{ offsetHeader: 0 }}
-        showSorterTooltip={false}
-      />
+      <Table {...tableProps} />
       
-      {/* 股票走势图抽屉 */}
-      {selectedStock && (
+      {chartVisible && selectedStock && (
         <StockChart
           visible={chartVisible}
-          onClose={handleChartClose}
           stockCode={selectedStock.code}
           stockName={selectedStock.name}
+          onClose={handleChartClose}
         />
       )}
     </>

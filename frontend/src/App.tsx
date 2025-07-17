@@ -550,6 +550,7 @@ const App: React.FC = () => {
                 loading={loading} 
                 onRemoveStock={handleRemoveStock}
                 onDrawerStateChange={handleDrawerStateChange}
+                onRefresh={() => fetchWatchlistFromApi(false)}
               />
             )}
           </Card>

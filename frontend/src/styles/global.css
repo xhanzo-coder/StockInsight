@@ -189,15 +189,180 @@ body {
   color: #8b8d97 !important;
 }
 
-/* 按钮样式 */
-.ant-btn-primary {
-  background: #667eea !important;
-  border-color: #667eea !important;
-  border-radius: 8px !important;
+/* 分页器深色主题样式 */
+.custom-pagination {
+  margin-top: 16px !important;
+  padding: 16px 24px !important;
+  background: #2a2d3a !important;
+  border-top: 1px solid #3a3d4a !important;
+  border-radius: 0 0 8px 8px !important;
+  text-align: center !important;
 }
 
-.ant-btn-primary:hover {
-  background: #5a6fd8 !important;
+/* 自定义分页器样式 */
+.custom-pagination {
+  margin-top: 16px !important;
+  text-align: center !important;
+}
+
+.custom-pagination .ant-pagination-item {
+  background: #2a2d3a !important;
+  border: 1px solid #3a3d4a !important;
+  border-radius: 6px !important;
+  margin: 0 4px !important;
+}
+
+.custom-pagination .ant-pagination-item a {
+  color: #ffffff !important;
+  display: block !important;
+  padding: 0 !important;
+  line-height: 30px !important;
+  height: 32px !important;
+  border-radius: 6px !important;
+}
+
+.custom-pagination .ant-pagination-item:hover {
+  background: #333647 !important;
+  border-color: #4a4d5a !important;
+}
+
+.custom-pagination .ant-pagination-item-active {
+  background: #667eea !important;
+  border-color: #667eea !important;
+}
+
+.custom-pagination .ant-pagination-item-active a {
+  color: #ffffff !important;
+}
+
+.custom-pagination .ant-pagination-prev,
+.custom-pagination .ant-pagination-next {
+  background: #2a2d3a !important;
+  border: 1px solid #3a3d4a !important;
+  border-radius: 6px !important;
+}
+
+.custom-pagination .ant-pagination-prev:hover,
+.custom-pagination .ant-pagination-next:hover {
+  background: #333647 !important;
+  border-color: #4a4d5a !important;
+}
+
+.custom-pagination .ant-pagination-prev .ant-pagination-item-link,
+.custom-pagination .ant-pagination-next .ant-pagination-item-link {
+  color: #ffffff !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-pagination .ant-pagination-disabled {
+  background: #1a1d2a !important;
+  border-color: #2a2d3a !important;
+}
+
+.custom-pagination .ant-pagination-disabled .ant-pagination-item-link {
+  color: #4a4d5a !important;
+}
+
+.custom-pagination .ant-pagination-options {
+  margin-left: 16px !important;
+}
+
+.custom-pagination .ant-pagination-options .ant-select {
+  margin-right: 8px !important;
+}
+
+.custom-pagination .ant-pagination-options .ant-select-selector {
+  background: #2a2d3a !important;
+  border: 1px solid #3a3d4a !important;
+  border-radius: 6px !important;
+  color: #ffffff !important;
+  height: 32px !important;
+}
+
+.custom-pagination .ant-pagination-options .ant-select-selector:hover {
+  border-color: #4a4d5a !important;
+}
+
+.custom-pagination .ant-pagination-options .ant-select-selection-item {
+  color: #ffffff !important;
+  line-height: 30px !important;
+}
+
+.custom-pagination .ant-pagination-options .ant-select-arrow {
+  color: #8b8d97 !important;
+}
+
+.custom-pagination .ant-pagination-simple-pager {
+  color: #ffffff !important;
+}
+
+.custom-pagination .ant-pagination-simple-pager input {
+  background: #2a2d3a !important;
+  border: 1px solid #3a3d4a !important;
+  border-radius: 6px !important;
+  color: #ffffff !important;
+  text-align: center !important;
+}
+
+.custom-pagination .ant-pagination-simple-pager input:hover {
+  border-color: #4a4d5a !important;
+}
+
+.custom-pagination .ant-pagination-simple-pager input:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+}
+
+.custom-pagination .ant-pagination-total-text {
+  color: #8b8d97 !important;
+  margin-right: 16px !important;
+}
+
+.custom-pagination .ant-pagination-jump-prev,
+.custom-pagination .ant-pagination-jump-next {
+  background: #2a2d3a !important;
+  border: 1px solid #3a3d4a !important;
+  border-radius: 6px !important;
+}
+
+.custom-pagination .ant-pagination-jump-prev:hover,
+.custom-pagination .ant-pagination-jump-next:hover {
+  background: #333647 !important;
+  border-color: #4a4d5a !important;
+}
+
+.custom-pagination .ant-pagination-jump-prev .ant-pagination-item-link,
+.custom-pagination .ant-pagination-jump-next .ant-pagination-item-link {
+  color: #ffffff !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* 下拉菜单深色主题 */
+.ant-select-dropdown {
+  background: #2a2d3a !important;
+  border: 1px solid #3a3d4a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.ant-select-item {
+  color: #ffffff !important;
+  background: transparent !important;
+}
+
+.ant-select-item:hover {
+  background: #333647 !important;
+}
+
+.ant-select-item-option-selected {
+  background: #667eea !important;
+  color: #ffffff !important;
+}
+
+.ant-select-item-option-active {
+  background: #4a4d5a !important;
   border-color: #5a6fd8 !important;
 }
 
