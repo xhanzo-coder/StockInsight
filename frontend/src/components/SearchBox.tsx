@@ -97,70 +97,144 @@ const SearchBox: React.FC<SearchBoxProps> = ({
   // 搜索股票的核心逻辑
   const performSearch = useCallback(async (keyword: string) => {
     if (!keyword.trim()) {
+      console.log('🔍 搜索取消：查询字符串为空');
       setOptions([]);
       return;
     }
 
+    // 如果关键词长度小于2，不执行搜索
+    if (keyword.trim().length < 2) {
+      console.log('🔍 搜索取消：关键词长度不足2个字符');
+      setOptions([]);
+      return;
+    }
+
+    console.log('🔍 开始搜索：', {
+      keyword: keyword.trim(),
+      timestamp: new Date().toISOString(),
+      searchValue: searchValue,
+      currentOptions: options.length
+    });
+
     setLoading(true);
     try {
+      console.log('📡 调用API搜索股票:', keyword);
       const response = await apiService.searchStocks(keyword, 10);
-      if (response.success && response.data) {
-        const searchOptions: OptionType[] = response.data.map(stock => ({
-          value: `${stock.code} ${stock.name}`,
-          label: (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 500, color: '#ffffff' }}>{stock.name}</div>
-                <div style={{ fontSize: '0.8rem', color: '#8b8d97' }}>
-                  {stock.code} | ¥{stock.current_price.toFixed(2)}
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ 
-                    color: stock.change_percent > 0 ? '#22c55e' : 
-                           stock.change_percent < 0 ? '#ef4444' : '#8b8d97',
-                    fontSize: '0.8rem'
-                  }}>
-                    {stock.change_percent > 0 ? '+' : ''}{stock.change_percent.toFixed(2)}%
+      
+      console.log('📊 API响应详情:', {
+        success: response.success,
+        hasData: !!response.data,
+        dataType: typeof response.data,
+        isArray: Array.isArray(response.data),
+        dataLength: Array.isArray(response.data) ? response.data.length : 'N/A',
+        firstItem: Array.isArray(response.data) && response.data.length > 0 ? response.data[0] : null,
+        rawResponse: response
+      });
+      
+      if (response.success && response.data && Array.isArray(response.data)) {
+        const searchOptions: OptionType[] = response.data.map((stock, index) => {
+          console.log(`📋 处理搜索结果 ${index + 1}:`, {
+            stock,
+            hasCode: 'code' in stock,
+            hasName: 'name' in stock,
+            hasPrice: 'current_price' in stock,
+            hasChangePercent: 'change_percent' in stock
+          });
+
+          return {
+            value: `${stock.code} ${stock.name}`,
+            label: (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 500, color: '#ffffff' }}>{stock.name}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#8b8d97' }}>
+                    {stock.code} | ¥{typeof stock.current_price === 'number' ? stock.current_price.toFixed(2) : '0.00'}
                   </div>
                 </div>
-                {onAddStock && (
-                  <Button
-                    type="primary"
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddStock(stock);
-                    }}
-                    style={{
-                      background: '#667eea',
-                      borderColor: '#667eea',
-                      fontSize: '0.75rem',
-                      height: '24px',
-                      padding: '0 8px'
-                    }}
-                  >
-                    添加
-                  </Button>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ 
+                      color: (stock.change_percent || 0) > 0 ? '#22c55e' : 
+                             (stock.change_percent || 0) < 0 ? '#ef4444' : '#8b8d97',
+                      fontSize: '0.8rem'
+                    }}>
+                      {(stock.change_percent || 0) > 0 ? '+' : ''}{(stock.change_percent || 0).toFixed(2)}%
+                    </div>
+                  </div>
+                  {onAddStock && (
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddStock(stock);
+                        message.success(`已添加 ${stock.name} 到关注列表`);
+                      }}
+                      style={{
+                        background: '#667eea',
+                        borderColor: '#667eea',
+                        fontSize: '0.75rem',
+                        height: '24px',
+                        padding: '0 8px'
+                      }}
+                    >
+                      添加
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          ),
-          stock
-        }));
+            ),
+            stock
+          };
+        });
+        
+        console.log('✅ 搜索结果处理完成：', {
+          originalCount: response.data.length,
+          formattedCount: searchOptions.length,
+          formattedOptions: searchOptions.map(opt => ({
+            value: opt.value,
+            hasLabel: !!opt.label,
+            stock: opt.stock
+          }))
+        });
+        
         setOptions(searchOptions);
+        console.log('搜索结果处理完成，共', searchOptions.length, '条');
       } else {
+        console.warn('⚠️ 搜索结果格式异常：', {
+          success: response.success,
+          hasData: !!response.data,
+          dataType: typeof response.data,
+          isArray: Array.isArray(response.data),
+          response: response
+        });
+        console.log('搜索无结果或响应格式错误');
         setOptions([]);
       }
     } catch (error) {
-      console.error('搜索失败:', error);
-      message.error(handleApiError(error));
+      console.error('💥 搜索请求异常：', {
+        errorType: error instanceof Error ? error.constructor.name : typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        keyword: keyword.trim(),
+        timestamp: new Date().toISOString()
+      });
+      
+      const errorMessage = handleApiError(error);
+      // 只在非网络错误时显示错误消息，避免频繁弹窗
+      if (!errorMessage.includes('网络') && !errorMessage.includes('连接')) {
+        message.error(errorMessage);
+      }
       setOptions([]);
     } finally {
       setLoading(false);
+      console.log('🏁 搜索完成：', {
+        keyword: keyword.trim(),
+        timestamp: new Date().toISOString(),
+        finalOptionsCount: options.length
+      });
     }
-  }, [onAddStock]);
+  }, [onAddStock, searchValue, options.length]);
 
   // 防抖搜索函数
   const searchStocks = useMemo(
@@ -253,74 +327,85 @@ const SearchBox: React.FC<SearchBoxProps> = ({
 
   // 处理搜索按钮点击
   const handleSearchClick = async () => {
-    if (searchValue.trim()) {
-      setLoading(true);
-      try {
-        const response = await apiService.searchStocks(searchValue, 10);
-        if (response.success && response.data && response.data.length > 0) {
-          // 如果搜索成功且有结果，保存第一个结果到历史记录
-          if (response.data[0]) {
-            saveToHistory(response.data[0]);
-          }
-          const searchOptions: OptionType[] = response.data.map(stock => ({
-            value: `${stock.code} ${stock.name}`,
-            label: (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 500, color: '#ffffff' }}>{stock.name}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#8b8d97' }}>
-                    {stock.code} | ¥{stock.current_price.toFixed(2)}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ 
-                      color: stock.change_percent > 0 ? '#22c55e' : 
-                             stock.change_percent < 0 ? '#ef4444' : '#8b8d97',
-                      fontSize: '0.8rem'
-                    }}>
-                      {stock.change_percent > 0 ? '+' : ''}{stock.change_percent.toFixed(2)}%
-                    </div>
-                  </div>
-                  {onAddStock && (
-                    <Button
-                      type="primary"
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAddStock(stock);
-                      }}
-                      style={{
-                        background: '#667eea',
-                        borderColor: '#667eea',
-                        fontSize: '0.75rem',
-                        height: '24px',
-                        padding: '0 8px'
-                      }}
-                    >
-                      添加
-                    </Button>
-                  )}
+    const trimmedValue = searchValue.trim();
+    if (!trimmedValue) {
+      message.warning('请输入搜索关键词');
+      return;
+    }
+
+    if (trimmedValue.length < 2) {
+      message.warning('请输入至少2个字符');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('手动搜索:', trimmedValue);
+      const response = await apiService.searchStocks(trimmedValue, 10);
+      console.log('手动搜索响应:', response);
+      
+      if (response.success && response.data && Array.isArray(response.data) && response.data.length > 0) {
+        // 如果搜索成功且有结果，保存第一个结果到历史记录
+        saveToHistory(response.data[0]);
+        
+        const searchOptions: OptionType[] = response.data.map(stock => ({
+          value: `${stock.code} ${stock.name}`,
+          label: (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 500, color: '#ffffff' }}>{stock.name}</div>
+                <div style={{ fontSize: '0.8rem', color: '#8b8d97' }}>
+                  {stock.code} | ¥{typeof stock.current_price === 'number' ? stock.current_price.toFixed(2) : '0.00'}
                 </div>
               </div>
-            ),
-            stock
-          }));
-          setOptions(searchOptions);
-          message.success(`找到 ${response.data.length} 个相关股票`);
-        } else {
-          setOptions([]);
-          message.info('未找到相关股票，请尝试其他关键词');
-        }
-      } catch (error) {
-        console.error('搜索失败:', error);
-        message.error(handleApiError(error));
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ 
+                    color: (stock.change_percent || 0) > 0 ? '#22c55e' : 
+                           (stock.change_percent || 0) < 0 ? '#ef4444' : '#8b8d97',
+                    fontSize: '0.8rem'
+                  }}>
+                    {(stock.change_percent || 0) > 0 ? '+' : ''}{(stock.change_percent || 0).toFixed(2)}%
+                  </div>
+                </div>
+                {onAddStock && (
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddStock(stock);
+                      message.success(`已添加 ${stock.name} 到关注列表`);
+                    }}
+                    style={{
+                      background: '#667eea',
+                      borderColor: '#667eea',
+                      fontSize: '0.75rem',
+                      height: '24px',
+                      padding: '0 8px'
+                    }}
+                  >
+                    添加
+                  </Button>
+                )}
+              </div>
+            </div>
+          ),
+          stock
+        }));
+        setOptions(searchOptions);
+        message.success(`找到 ${response.data.length} 个相关股票`);
+      } else {
         setOptions([]);
-      } finally {
-        setLoading(false);
+        message.info(`未找到与"${trimmedValue}"相关的股票，请尝试其他关键词`);
       }
-    } else {
-      message.warning('请输入搜索关键词');
+    } catch (error) {
+      console.error('搜索失败:', error);
+      const errorMessage = handleApiError(error);
+      message.error(`搜索失败: ${errorMessage}`);
+      setOptions([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -332,18 +417,20 @@ const SearchBox: React.FC<SearchBoxProps> = ({
   };
 
   return (
-    <div style={{ position: 'relative', zIndex: 1050 }}> {/* 增加 z-index 确保下拉内容在其他元素之上 */}
+    <div className="search-box-container" style={{ position: 'relative', zIndex: 1050 }}>
       <div 
-          style={{
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            width: '320px',
-            height: '48px',
-            margin: '0 auto 30px auto', // 增加底部外边距，为下拉内容留出更多空间
-            marginTop: '10px' // 增加顶部间距
-          }}
-        >
+        className="search-input-wrapper"
+        style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          maxWidth: '600px',
+          height: '48px',
+          margin: '0 auto',
+          marginTop: '0px'
+        }}
+      >
         <SearchOutlined 
           style={{
             position: 'absolute',
@@ -370,69 +457,161 @@ const SearchBox: React.FC<SearchBoxProps> = ({
             background: '#2a2d3a',
             border: '1px solid #3a3d4a',
             borderRadius: '8px',
-            zIndex: 1000
+            zIndex: 1100,
+            boxShadow: '0 6px 16px rgba(0, 0, 0, 0.25)',
+            maxHeight: '300px',
+            overflowY: 'auto'
           }}
           notFoundContent={loading ? '搜索中...' : searchValue.trim().length < 2 ? '请输入至少2个字符' : '暂无结果'}
           filterOption={false}
+          allowClear={false}
+          showSearch={false}
         />
-      <Button 
-        type="primary" 
-        onClick={handleSearchClick}
-        loading={loading}
-        style={{
-          position: 'absolute',
-          right: '6px',
-          background: '#667eea',
-          borderColor: '#667eea',
-          borderRadius: '20px',
-          padding: '8px 16px',
-          fontSize: '14px',
-          fontWeight: 500,
-          zIndex: 10,
-          height: '36px',
-          lineHeight: '20px'
-        }}
-      >
-        搜索
-      </Button>
+        <Button 
+          type="primary" 
+          onClick={handleSearchClick}
+          loading={loading}
+          style={{
+            position: 'absolute',
+            right: '6px',
+            background: '#667eea',
+            borderColor: '#667eea',
+            borderRadius: '20px',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: 500,
+            zIndex: 10,
+            height: '36px',
+            lineHeight: '20px'
+          }}
+        >
+          搜索
+        </Button>
+      </div>
+      
+      {/* 增强的样式隔离 */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          .ant-select-selector {
+          /* 搜索框容器样式 - 高特异性确保不被全局样式覆盖 */
+          .search-box-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+          }
+
+          /* 搜索框主体样式 - 使用高特异性选择器 */
+          .search-box-container .ant-select.ant-select-auto-complete {
+            width: 100% !important;
+            height: 48px !important;
+          }
+
+          .search-box-container .ant-select.ant-select-auto-complete .ant-select-selector {
             background: #2a2d3a !important;
             border: 1px solid #3a3d4a !important;
             border-radius: 24px !important;
-            padding: 0 50px 0 40px !important;
+            padding: 0 60px 0 40px !important;
             height: 48px !important;
             color: #ffffff !important;
             display: flex !important;
             align-items: center !important;
+            min-height: 48px !important;
+            box-sizing: border-box !important;
+            line-height: 24px !important;
+            transition: all 0.3s ease !important;
           }
-          .ant-select-selection-search-input {
+
+          .search-box-container .ant-select.ant-select-auto-complete .ant-select-selector:hover {
+            border-color: #667eea !important;
+          }
+
+          .search-box-container .ant-select.ant-select-auto-complete .ant-select-selection-search {
+            left: 40px !important;
+            right: 60px !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+          }
+
+          .search-box-container .ant-select.ant-select-auto-complete .ant-select-selection-search-input {
             background: transparent !important;
             border: none !important;
             color: #ffffff !important;
             height: 100% !important;
+            line-height: 24px !important;
+            font-size: 14px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            outline: none !important;
           }
-          .ant-select-selection-placeholder {
+
+          .search-box-container .ant-select.ant-select-auto-complete .ant-select-selection-placeholder {
             color: #8b8d97 !important;
             left: 40px !important;
+            right: 60px !important;
+            line-height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            height: 100% !important;
+            font-size: 14px !important;
+          }
+
+          .search-box-container .ant-select.ant-select-auto-complete.ant-select-focused .ant-select-selector {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+          }
+
+          /* 下拉菜单样式 */
+          .search-box-container .ant-select-dropdown {
+            background: #2a2d3a !important;
+            border: 1px solid #3a3d4a !important;
+            border-radius: 8px !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+            z-index: 1100 !important;
+          }
+
+          .search-box-container .ant-select-item {
+            color: #ffffff !important;
+            background: transparent !important;
+            padding: 8px 12px !important;
+            transition: all 0.2s ease !important;
+          }
+
+          .search-box-container .ant-select-item:hover {
+            background: #3a3d4a !important;
+          }
+
+          .search-box-container .ant-select-item-option-selected {
+            background: #667eea !important;
+          }
+
+          .search-box-container .ant-empty {
+            color: #8b8d97 !important;
+          }
+
+          .search-box-container .ant-empty-description {
+            color: #8b8d97 !important;
           }
         `
       }} />
-      </div>
       
       {/* 搜索历史和热门股票 */}
       {showHistory && (
         <div style={{
           position: 'absolute',
-          top: '60px', // 增加顶部距离，避免与搜索框重叠
-          left: 0,
-          width: '320px',
+          top: '52px', // 调整顶部距离，确保不与搜索框重叠
+          left: '0',
+          right: '0',
+          width: '100%',
+          maxWidth: '600px',
+          margin: '0 auto',
           background: '#2a2d3a',
           border: '1px solid #3a3d4a',
           borderRadius: '8px',
           padding: '12px',
-          zIndex: 1051, // 提高z-index确保在其他元素之上
+          zIndex: 1200, // 提高z-index确保在其他元素之上
           boxShadow: '0 6px 16px rgba(0, 0, 0, 0.25)',
           maxHeight: '400px', // 限制最大高度
           overflowY: 'auto' // 内容过多时可滚动
@@ -465,9 +644,16 @@ const SearchBox: React.FC<SearchBoxProps> = ({
                       color: '#ffffff',
                       cursor: 'pointer',
                       padding: '4px 8px',
-                      borderRadius: '4px'
+                      borderRadius: '4px',
+                      transition: 'all 0.2s ease'
                     }}
                     onClick={() => selectFromHistory(stock)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#4a4d5a';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#3a3d4a';
+                    }}
                   >
                     {stock.name} ({stock.code})
                   </Tag>
@@ -493,9 +679,16 @@ const SearchBox: React.FC<SearchBoxProps> = ({
                       color: '#ffffff',
                       cursor: 'pointer',
                       padding: '4px 8px',
-                      borderRadius: '4px'
+                      borderRadius: '4px',
+                      transition: 'all 0.2s ease'
                     }}
                     onClick={() => selectHotStock(stock)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#4a4d5a';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#3a3d4a';
+                    }}
                   >
                     {stock.name} ({stock.code})
                   </Tag>

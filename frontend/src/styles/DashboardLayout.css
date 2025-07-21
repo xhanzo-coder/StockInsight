@@ -1,0 +1,89 @@
+/* 主面板布局样式 */
+
+.dashboard-layout {
+  min-height: 100vh;
+  background-color: #0a0b0d;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  background-color: #1a1d29;
+  border-bottom: 1px solid #2a2d3a;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-icon {
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.user-info:hover {
+  background-color: #2a2d3a;
+}
+
+.username {
+  margin-left: 8px;
+  color: #ffffff;
+}
+
+.dashboard-content {
+  padding: 0; /* 移除所有padding，让DashboardPage自己控制 */
+  min-height: calc(100vh - 64px - 40px); /* 减去header和footer的高度 */
+}
+
+.dashboard-footer {
+  text-align: center;
+  padding: 12px 24px;
+  background-color: #1a1d29;
+  border-top: 1px solid #2a2d3a;
+  height: 40px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 0 12px;
+  }
+  
+  .dashboard-content {
+    padding: 16px;
+  }
+  
+  .username {
+    display: none;
+  }
+}

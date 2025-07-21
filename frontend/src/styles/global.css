@@ -14,6 +14,31 @@ body {
   overflow-x: hidden;
 }
 
+/* 加载组件样式 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  flex-direction: column;
+  background: #1a1d29;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #1890ff;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* 主容器响应式布局 */
 .main-container {
   max-width: 1600px;
@@ -23,23 +48,9 @@ body {
   min-height: calc(100vh - 120px);
 }
 
-/* 响应式断点 */
-@media (max-width: 768px) {
-  .main-container {
-    padding: 0 12px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .main-container {
-    padding: 0 40px;
-  }
-}
-
-@media (min-width: 1600px) {
-  .main-container {
-    padding: 0 60px;
-  }
+/* 移除响应式断点，确保始终使用桌面布局 */
+.main-container {
+  padding: 0 40px;
 }
 
 /* Layout 响应式 */
@@ -48,7 +59,8 @@ body {
   min-height: 100vh;
 }
 
-.ant-layout-header {
+/* 只对特定的固定头部布局应用这些样式，不影响DashboardLayout */
+.ant-layout.fixed-header .ant-layout-header {
   position: fixed !important;
   top: 0;
   left: 0;
@@ -64,7 +76,7 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.ant-layout-content {
+.ant-layout.fixed-header .ant-layout-content {
   margin-top: 80px !important;
   padding: 24px 0 !important;
   background: #1a1d29 !important;
@@ -379,19 +391,19 @@ body {
   color: #ffffff !important;
 }
 
-/* 下拉选择器样式 */
-.ant-select {
+/* 下拉选择器样式 - 限制作用域，不影响SearchBox */
+.ant-select:not(.search-box-container .ant-select) {
   color: #ffffff !important;
 }
 
-.ant-select-selector {
+.ant-select-selector:not(.search-box-container .ant-select-selector) {
   background: #2a2d3a !important;
   border: 1px solid #3a3d4a !important;
   color: #ffffff !important;
   border-radius: 8px !important;
 }
 
-.ant-select-arrow {
+.ant-select-arrow:not(.search-box-container .ant-select-arrow) {
   color: #8b8d97 !important;
 }
 
@@ -413,7 +425,8 @@ body {
   background: #667eea !important;
 }
 
-/* AutoComplete 样式 */
+/* AutoComplete 样式 - 已注释，避免与SearchBox组件冲突 */
+/*
 .ant-select-auto-complete .ant-select-selector {
   background: #2a2d3a !important;
   border: 1px solid #3a3d4a !important;
@@ -421,6 +434,7 @@ body {
   padding: 12px 48px 12px 40px !important;
   height: auto !important;
 }
+*/
 
 /* 消息提示样式 */
 .ant-message {
@@ -512,7 +526,8 @@ body {
   color: #8b8d97 !important;
 }
 
-/* 搜索框样式 */
+/* 搜索框样式 - 已注释，避免与SearchBox组件冲突 */
+/*
 .search-container {
   position: relative;
   display: flex;
@@ -531,6 +546,7 @@ body {
 }
 
 /* AutoComplete 搜索框特殊样式 */
+/*
 .search-container .search-input.ant-select {
   width: 100% !important;
   height: 48px !important;
@@ -586,6 +602,7 @@ body {
   border-color: #667eea !important;
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
 }
+*/
 
 /* 搜索下拉菜单样式 */
 .ant-select-dropdown {

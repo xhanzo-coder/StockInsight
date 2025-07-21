@@ -13,6 +13,11 @@ class Config:
     # Flask基础配置
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'stock-api-secret-key-2024'
     
+    # JWT配置
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'stock-jwt-secret-key-2024'
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)  # JWT令牌过期时间
+    JWT_ALGORITHM = 'HS256'
+    
     # 数据库配置
     DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'stock_data.db')
     
@@ -44,10 +49,10 @@ class Config:
     LOG_FILE = 'stock_api.log'
     LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     
-    # CORS配置
-    CORS_ORIGINS = ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001']
-    CORS_METHODS = ['GET', 'POST', 'DELETE', 'OPTIONS']
-    CORS_HEADERS = ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin']
+    # CORS配置 - 更宽松的设置用于开发环境
+    CORS_ORIGINS = ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001', 'http://localhost:5000']
+    CORS_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD']
+    CORS_HEADERS = ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Request-Time', 'Access-Control-Allow-Origin']
     
     # AKShare配置
     AKSHARE_TIMEOUT = 30  # 请求超时时间（秒）

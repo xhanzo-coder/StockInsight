@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 CORS修复测试页面</h1>
+        
+        <div class="test-section info">
+            <h3>📋 测试说明</h3>
+            <p>此页面用于测试CORS跨域问题是否已修复。点击下方按钮进行各项测试。</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🏥 健康检查测试</h3>
+            <button onclick="testHealth()">测试健康检查</button>
+            <div id="health-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 认证测试</h3>
+            <button onclick="testAuth()">测试登录</button>
+            <button onclick="testWatchlist()">测试关注列表（需要token）</button>
+            <div id="auth-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 股票数据测试</h3>
+            <button onclick="testStockSearch()">测试股票搜索</button>
+            <button onclick="testStockDetail()">测试股票详情</button>
+            <div id="stock-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 环境变量测试</h3>
+            <button onclick="testEnvironment()">检查环境变量</button>
+            <div id="env-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 测试健康检查
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.innerHTML = '<p>🔄 正在测试健康检查...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ 健康检查成功</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ 健康检查失败</h4>
+                            <p>状态码: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ 健康检查异常</h4>
+                        <p>错误: ${error.message}</p>
+                        <p>这通常表示CORS问题或网络连接问题</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试认证
+        async function testAuth() {
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.innerHTML = '<p>🔄 正在测试登录...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin@stockinsight.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // 保存token
+                    localStorage.setItem('auth_token', data.data.token);
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ 登录成功</h4>
+                            <p>Token已保存到localStorage</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ 登录失败</h4>
+                            <p>状态码: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ 登录异常</h4>
+                        <p>错误: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试关注列表
+        async function testWatchlist() {
+            const resultDiv = document.getElementById('auth-result');
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ 没有token</h4>
+                        <p>请先执行登录测试</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>🔄 正在测试关注列表...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/watchlist', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ 关注列表获取成功</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ 关注列表获取失败</h4>
+                            <p>状态码: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ 关注列表异常</h4>
+                        <p>错误: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试股票搜索
+        async function testStockSearch() {
+            const resultDiv = document.getElementById('stock-result');
+            resultDiv.innerHTML = '<p>🔄 正在测试股票搜索...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/stocks/search?keyword=平安');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ 股票搜索成功</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ 股票搜索失败</h4>
+                            <p>状态码: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ 股票搜索异常</h4>
+                        <p>错误: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试股票详情
+        async function testStockDetail() {
+            const resultDiv = document.getElementById('stock-result');
+            resultDiv.innerHTML = '<p>🔄 正在测试股票详情...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/stocks/000001');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ 股票详情获取成功</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ 股票详情获取失败</h4>
+                            <p>状态码: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ 股票详情异常</h4>
+                        <p>错误: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试环境变量
+        function testEnvironment() {
+            const resultDiv = document.getElementById('env-result');
+            
+            const envInfo = {
+                'process对象': typeof process !== 'undefined' ? '存在' : '不存在',
+                'process.env': typeof process !== 'undefined' && process.env ? '存在' : '不存在',
+                'REACT_APP_API_BASE_URL': typeof process !== 'undefined' && process.env ? process.env.REACT_APP_API_BASE_URL : '无法访问',
+                'window.location': window.location.href,
+                'localStorage token': localStorage.getItem('auth_token') ? '存在' : '不存在'
+            };
+            
+            resultDiv.innerHTML = `
+                <div class="info">
+                    <h4>📊 环境变量信息</h4>
+                    <pre>${JSON.stringify(envInfo, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        // 页面加载时自动检查环境
+        window.onload = function() {
+            testEnvironment();
+        };
+    </script>
+</body>
+</html>

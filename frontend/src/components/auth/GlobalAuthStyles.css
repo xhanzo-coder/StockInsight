@@ -1,0 +1,138 @@
+/* 全局强制样式覆盖 - 确保输入框样式生效 */
+
+/* 强制覆盖所有 Ant Design 输入框样式 */
+.modern-auth-container .ant-input,
+.modern-auth-container .ant-input-affix-wrapper,
+.modern-auth-container .ant-input-password {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  border-radius: 8px !important;
+  color: #ffffff !important;
+  height: 48px !important;
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+}
+
+/* 悬停状态 */
+.modern-auth-container .ant-input:hover,
+.modern-auth-container .ant-input-affix-wrapper:hover,
+.modern-auth-container .ant-input-password:hover {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  background: rgba(15, 23, 42, 0.8) !important;
+}
+
+/* 聚焦状态 */
+.modern-auth-container .ant-input:focus,
+.modern-auth-container .ant-input-affix-wrapper:focus,
+.modern-auth-container .ant-input-affix-wrapper-focused,
+.modern-auth-container .ant-input-password:focus {
+  border-color: #3b82f6 !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+  outline: none !important;
+}
+
+/* 内部 input 元素 */
+.modern-auth-container .ant-input-affix-wrapper input,
+.modern-auth-container .ant-input-password input {
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* 占位符文本 */
+.modern-auth-container .ant-input::placeholder,
+.modern-auth-container .ant-input-affix-wrapper input::placeholder,
+.modern-auth-container .ant-input-password input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* 图标样式 */
+.modern-auth-container .ant-input-prefix,
+.modern-auth-container .ant-input-suffix {
+  color: rgba(59, 130, 246, 0.7) !important;
+}
+
+.modern-auth-container .anticon {
+  color: rgba(59, 130, 246, 0.7) !important;
+}
+
+/* 错误状态 */
+.modern-auth-container .ant-form-item-has-error .ant-input,
+.modern-auth-container .ant-form-item-has-error .ant-input-affix-wrapper {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.modern-auth-container .ant-form-item-has-error .ant-input:focus,
+.modern-auth-container .ant-form-item-has-error .ant-input-affix-wrapper:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* 按钮样式 */
+.modern-auth-container .ant-btn-primary {
+  width: 100% !important;
+  height: 48px !important;
+  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.modern-auth-container .ant-btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4) !important;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+}
+
+.modern-auth-container .ant-btn-primary:focus {
+  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* 表单项样式 */
+.modern-auth-container .ant-form-item {
+  margin-bottom: 24px !important;
+}
+
+.modern-auth-container .ant-form-item-explain-error {
+  color: #ef4444 !important;
+  font-size: 13px !important;
+  margin-top: 8px !important;
+}
+
+/* 强制覆盖所有可能的样式 */
+.modern-auth-container * {
+  box-sizing: border-box !important;
+}
+
+/* 确保输入框在所有状态下都有正确的样式 */
+.modern-auth-container input[type="text"],
+.modern-auth-container input[type="password"],
+.modern-auth-container input[type="email"] {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  border-radius: 8px !important;
+  color: #ffffff !important;
+  height: 48px !important;
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+}
+
+.modern-auth-container input[type="text"]:focus,
+.modern-auth-container input[type="password"]:focus,
+.modern-auth-container input[type="email"]:focus {
+  border-color: #3b82f6 !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+  outline: none !important;
+}

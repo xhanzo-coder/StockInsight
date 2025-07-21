@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索功能测试 - StockInsight</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1d29;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .test-section {
+            background: #2a2d3a;
+            border: 1px solid #3a3d4a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-title {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .test-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #222530;
+            border-radius: 8px;
+        }
+        
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .test-button:hover {
+            background: #5a6fd8;
+        }
+        
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #1a1d29;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .success {
+            border-left-color: #22c55e;
+            color: #22c55e;
+        }
+        
+        .error {
+            border-left-color: #ef4444;
+            color: #ef4444;
+        }
+        
+        .warning {
+            border-left-color: #f59e0b;
+            color: #f59e0b;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background: #22c55e; }
+        .status-error { background: #ef4444; }
+        .status-warning { background: #f59e0b; }
+        .status-info { background: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 搜索功能测试页面</h1>
+            <p>测试搜索框的样式和功能修复效果</p>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">1. 搜索API连接测试</div>
+            <div class="test-item">
+                <button class="test-button" onclick="testApiConnection()">测试API连接</button>
+                <div id="api-result" class="result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">2. 搜索功能测试</div>
+            <div class="test-item">
+                <button class="test-button" onclick="testSearch('平安')">搜索"平安"</button>
+                <button class="test-button" onclick="testSearch('000001')">搜索"000001"</button>
+                <button class="test-button" onclick="testSearch('招商银行')">搜索"招商银行"</button>
+                <button class="test-button" onclick="testSearch('江苏银行')">搜索"江苏银行"</button>
+                <div id="search-result" class="result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">3. 边界情况测试</div>
+            <div class="test-item">
+                <button class="test-button" onclick="testSearch('')">空字符串搜索</button>
+                <button class="test-button" onclick="testSearch('a')">单字符搜索</button>
+                <button class="test-button" onclick="testSearch('不存在的股票')">无效股票搜索</button>
+                <button class="test-button" onclick="testSearch('123456789')">无效代码搜索</button>
+                <div id="edge-result" class="result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">4. 性能测试</div>
+            <div class="test-item">
+                <button class="test-button" onclick="testPerformance()">批量搜索性能测试</button>
+                <div id="performance-result" class="result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">5. 实时状态监控</div>
+            <div class="test-item">
+                <div id="status-monitor">
+                    <p><span class="status-indicator status-info"></span>前端服务: <span id="frontend-status">检测中...</span></p>
+                    <p><span class="status-indicator status-info"></span>后端服务: <span id="backend-status">检测中...</span></p>
+                    <p><span class="status-indicator status-info"></span>搜索API: <span id="search-api-status">检测中...</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API基础URL
+        const API_BASE_URL = 'http://localhost:5000/api';
+        
+        // 测试API连接
+        async function testApiConnection() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '正在测试API连接...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ API连接成功</strong><br>
+                        状态: ${data.status}<br>
+                        消息: ${data.message}<br>
+                        时间戳: ${new Date(data.data.timestamp * 1000).toLocaleString()}
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ API连接失败: ${data.message || '未知错误'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ API连接失败: ${error.message}`;
+            }
+        }
+        
+        // 测试搜索功能
+        async function testSearch(keyword) {
+            const resultDiv = document.getElementById('search-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `正在搜索"${keyword}"...`;
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE_URL}/stocks/search?keyword=${encodeURIComponent(keyword)}&limit=5`);
+                const endTime = Date.now();
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'result success';
+                    let html = `
+                        <strong>✅ 搜索成功</strong><br>
+                        关键词: "${keyword}"<br>
+                        响应时间: ${endTime - startTime}ms<br>
+                        结果数量: ${data.data.length}<br>
+                    `;
+                    
+                    if (data.data.length > 0) {
+                        html += '<br><strong>搜索结果:</strong><br>';
+                        data.data.forEach((stock, index) => {
+                            html += `${index + 1}. ${stock.name} (${stock.code}) - ¥${stock.current_price}<br>`;
+                        });
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.className = 'result warning';
+                    resultDiv.innerHTML = `⚠️ 搜索无结果: ${data.message || '未找到相关股票'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ 搜索失败: ${error.message}`;
+            }
+        }
+        
+        // 边界情况测试
+        async function testEdgeCase(keyword) {
+            const resultDiv = document.getElementById('edge-result');
+            resultDiv.style.display = 'block';
+            
+            if (keyword === '') {
+                resultDiv.className = 'result warning';
+                resultDiv.innerHTML = '⚠️ 空字符串测试: 前端应该阻止空搜索';
+                return;
+            }
+            
+            if (keyword.length === 1) {
+                resultDiv.className = 'result warning';
+                resultDiv.innerHTML = '⚠️ 单字符测试: 前端应该要求至少2个字符';
+                return;
+            }
+            
+            await testSearch(keyword);
+        }
+        
+        // 性能测试
+        async function testPerformance() {
+            const resultDiv = document.getElementById('performance-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '正在进行性能测试...';
+            
+            const keywords = ['平安', '招商', '江苏', '000001', '600036', '600919'];
+            const results = [];
+            
+            try {
+                for (const keyword of keywords) {
+                    const startTime = Date.now();
+                    const response = await fetch(`${API_BASE_URL}/stocks/search?keyword=${encodeURIComponent(keyword)}&limit=3`);
+                    const endTime = Date.now();
+                    const data = await response.json();
+                    
+                    results.push({
+                        keyword,
+                        responseTime: endTime - startTime,
+                        success: response.ok && data.success,
+                        resultCount: data.success ? data.data.length : 0
+                    });
+                }
+                
+                const avgResponseTime = results.reduce((sum, r) => sum + r.responseTime, 0) / results.length;
+                const successRate = results.filter(r => r.success).length / results.length * 100;
+                
+                resultDiv.className = 'result success';
+                let html = `
+                    <strong>📊 性能测试结果</strong><br>
+                    平均响应时间: ${avgResponseTime.toFixed(2)}ms<br>
+                    成功率: ${successRate.toFixed(1)}%<br>
+                    <br><strong>详细结果:</strong><br>
+                `;
+                
+                results.forEach(result => {
+                    const status = result.success ? '✅' : '❌';
+                    html += `${status} "${result.keyword}": ${result.responseTime}ms (${result.resultCount}条结果)<br>`;
+                });
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ 性能测试失败: ${error.message}`;
+            }
+        }
+        
+        // 状态监控
+        async function checkServiceStatus() {
+            // 检查前端服务
+            try {
+                const frontendResponse = await fetch('/');
+                document.getElementById('frontend-status').textContent = frontendResponse.ok ? '✅ 运行正常' : '❌ 响应异常';
+                document.querySelector('#status-monitor p:nth-child(1) .status-indicator').className = 
+                    'status-indicator ' + (frontendResponse.ok ? 'status-success' : 'status-error');
+            } catch (error) {
+                document.getElementById('frontend-status').textContent = '❌ 连接失败';
+                document.querySelector('#status-monitor p:nth-child(1) .status-indicator').className = 'status-indicator status-error';
+            }
+            
+            // 检查后端服务
+            try {
+                const backendResponse = await fetch(`${API_BASE_URL}/health`);
+                const backendData = await backendResponse.json();
+                document.getElementById('backend-status').textContent = 
+                    backendResponse.ok ? `✅ 运行正常 (${backendData.status})` : '❌ 响应异常';
+                document.querySelector('#status-monitor p:nth-child(2) .status-indicator').className = 
+                    'status-indicator ' + (backendResponse.ok ? 'status-success' : 'status-error');
+            } catch (error) {
+                document.getElementById('backend-status').textContent = '❌ 连接失败';
+                document.querySelector('#status-monitor p:nth-child(2) .status-indicator').className = 'status-indicator status-error';
+            }
+            
+            // 检查搜索API
+            try {
+                const searchResponse = await fetch(`${API_BASE_URL}/stocks/search?keyword=平安&limit=1`);
+                const searchData = await searchResponse.json();
+                document.getElementById('search-api-status').textContent = 
+                    searchResponse.ok && searchData.success ? '✅ 功能正常' : '❌ 功能异常';
+                document.querySelector('#status-monitor p:nth-child(3) .status-indicator').className = 
+                    'status-indicator ' + (searchResponse.ok && searchData.success ? 'status-success' : 'status-error');
+            } catch (error) {
+                document.getElementById('search-api-status').textContent = '❌ 连接失败';
+                document.querySelector('#status-monitor p:nth-child(3) .status-indicator').className = 'status-indicator status-error';
+            }
+        }
+        
+        // 页面加载时检查状态
+        window.addEventListener('load', () => {
+            checkServiceStatus();
+            // 每30秒检查一次状态
+            setInterval(checkServiceStatus, 30000);
+        });
+        
+        // 添加键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 't') {
+                e.preventDefault();
+                testApiConnection();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -7,6 +7,7 @@
 
 from flask import Flask
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 import logging
 import os
 from datetime import datetime
@@ -15,6 +16,7 @@ from datetime import datetime
 from config import get_config
 from database import db_manager
 from api_routes import api_bp
+from auth_routes import auth_bp
 
 def create_app(config_name=None):
     """应用工厂函数"""
@@ -25,20 +27,38 @@ def create_app(config_name=None):
     config = get_config(config_name)
     app.config.from_object(config)
     
+    # 初始化 JWT
+    jwt = JWTManager(app)
+    
     # 配置CORS，允许跨域请求
     CORS(app, resources={
         r"/api/*": {
             "origins": config.CORS_ORIGINS,
             "methods": config.CORS_METHODS,
-            "allow_headers": config.CORS_HEADERS
+            "allow_headers": config.CORS_HEADERS,
+            "supports_credentials": False,  # 避免预检请求复杂化
+            "max_age": 86400  # 缓存预检请求结果24小时
         }
     })
     
     # 配置日志
     setup_logging(config)
     
+    # 添加根路径路由
+    @app.route('/')
+    def index():
+        """根路径，返回API信息"""
+        return {
+            'success': True,
+            'message': '股票数据API服务正在运行',
+            'version': '1.0.0',
+            'api_docs': '/api/health',
+            'timestamp': datetime.now().isoformat()
+        }
+    
     # 注册蓝图
     app.register_blueprint(api_bp)
+    app.register_blueprint(auth_bp)
     
     # 注册错误处理器
     register_error_handlers(app)

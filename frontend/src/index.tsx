@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
+import { AuthProvider } from './contexts/AuthContext';
 import App from './App';
 import './styles/global.css';
 
@@ -150,7 +151,9 @@ root.render(
       locale={zhCN}
       theme={darkTheme}
     >
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </ConfigProvider>
   </React.StrictMode>
 );

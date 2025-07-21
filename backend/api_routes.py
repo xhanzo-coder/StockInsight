@@ -13,6 +13,7 @@ from typing import Dict, Any
 from config import get_config
 from database import db_manager
 from stock_service import stock_service
+from auth_utils import token_required, optional_token
 
 # 获取配置
 config = get_config()
@@ -174,6 +175,7 @@ def search_stocks():
 @api_bp.route('/stocks/<stock_code>', methods=['GET'])
 @rate_limit
 @log_api_call
+# @optional_token  # 暂时禁用认证功能
 def get_stock_detail(stock_code):
     """获取股票详细信息接口"""
     try:
@@ -193,8 +195,14 @@ def get_stock_detail(stock_code):
                 404
             )
         
-        # 检查是否在关注列表中
-        is_watched = db_manager.is_in_watchlist(stock_code)
+        # 检查是否在关注列表中（支持用户隔离）
+        user_id = None
+        if hasattr(request, 'current_user') and request.current_user:
+            user_id = request.current_user['user_id']
+        
+        is_watched = False
+        if user_id:
+            is_watched = db_manager.is_in_watchlist(stock_code, user_id)
         stock_info['is_watched'] = is_watched
         
         return create_success_response(data=stock_info)
@@ -294,11 +302,20 @@ def get_stocks_batch():
         return create_error_response('INTERNAL_ERROR', str(e), 500)
 
 @api_bp.route('/watchlist', methods=['GET'])
+@rate_limit
 @log_api_call
+@token_required
 def get_watchlist():
     """获取关注列表接口"""
     try:
-        watchlist = db_manager.get_watchlist()
+        # 获取认证用户ID
+        user_id = request.current_user['user_id']
+        logger.info(f"=== 关注列表API调试 ===")
+        logger.info(f"认证用户ID: {user_id}")
+        
+        logger.info(f"查询用户 {user_id} 的关注列表")
+        watchlist = db_manager.get_watchlist(user_id)
+        logger.info(f"查询到 {len(watchlist)} 条关注列表记录")
         
         # 为每个关注的股票添加完整的股票信息
         enriched_watchlist = []
@@ -351,10 +368,15 @@ def get_watchlist():
         return create_error_response('INTERNAL_ERROR', str(e), 500)
 
 @api_bp.route('/watchlist', methods=['POST'])
+@rate_limit
 @log_api_call
+@token_required
 def add_to_watchlist():
     """添加股票到关注列表接口"""
     try:
+        # 获取认证用户ID
+        user_id = request.current_user['user_id']
+        
         data = request.get_json()
         if not data or 'code' not in data:
             return create_error_response(
@@ -383,7 +405,8 @@ def add_to_watchlist():
             db_manager.add_to_watchlist(
                 stock_code=stock_code,
                 stock_name=stock_info['name'],
-                industry=data.get('industry', '')
+                industry=data.get('industry', ''),
+                user_id=user_id
             )
             
             return create_success_response(
@@ -409,10 +432,15 @@ def add_to_watchlist():
         return create_error_response('INTERNAL_ERROR', str(e), 500)
 
 @api_bp.route('/watchlist/<stock_code>', methods=['DELETE'])
+@rate_limit
 @log_api_call
+@token_required
 def remove_from_watchlist(stock_code):
     """从关注列表删除股票接口"""
     try:
+        # 获取认证用户ID
+        user_id = request.current_user['user_id']
+        
         if not validate_stock_code(stock_code):
             return create_error_response(
                 'INVALID_STOCK_CODE',
@@ -420,7 +448,7 @@ def remove_from_watchlist(stock_code):
             )
         
         try:
-            db_manager.remove_from_watchlist(stock_code)
+            db_manager.remove_from_watchlist(stock_code, user_id)
             
             return create_success_response(
                 data={'code': stock_code},
@@ -438,6 +466,47 @@ def remove_from_watchlist(stock_code):
     
     except Exception as e:
         logger.error(f"删除关注列表API错误: {stock_code}, {str(e)}")
+        return create_error_response('INTERNAL_ERROR', str(e), 500)
+
+@api_bp.route('/watchlist/<stock_code>/pin', methods=['POST'])
+@rate_limit
+@log_api_call
+@token_required
+def toggle_pin_stock(stock_code):
+    """切换股票置顶状态接口"""
+    try:
+        # 获取认证用户ID
+        user_id = request.current_user['user_id']
+        
+        if not validate_stock_code(stock_code):
+            return create_error_response(
+                'INVALID_STOCK_CODE',
+                config.ERROR_MESSAGES['INVALID_STOCK_CODE']
+            )
+        
+        try:
+            new_pinned_status = db_manager.toggle_pin_stock(stock_code, user_id)
+            
+            action = "置顶" if new_pinned_status else "取消置顶"
+            return create_success_response(
+                data={
+                    'code': stock_code,
+                    'is_pinned': new_pinned_status
+                },
+                message=f'股票{action}成功'
+            )
+        
+        except ValueError as e:
+            if '不在关注列表中' in str(e):
+                return create_error_response(
+                    'NOT_IN_WATCHLIST',
+                    config.ERROR_MESSAGES['NOT_IN_WATCHLIST'],
+                    404
+                )
+            raise
+    
+    except Exception as e:
+        logger.error(f"切换股票置顶状态API错误: {stock_code}, {str(e)}")
         return create_error_response('INTERNAL_ERROR', str(e), 500)
 
 @api_bp.route('/market/overview', methods=['GET'])

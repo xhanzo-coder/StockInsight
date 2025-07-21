@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API连接测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { background-color: #f6ffed; border: 1px solid #b7eb8f; color: #389e0d; }
+        .error { background-color: #fff2f0; border: 1px solid #ffccc7; color: #cf1322; }
+        .info { background-color: #f0f9ff; border: 1px solid #91d5ff; color: #1890ff; }
+        .warning { background-color: #fffbe6; border: 1px solid #ffe58f; color: #d48806; }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover { background: #40a9ff; }
+        button:disabled { background: #d9d9d9; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API连接测试工具</h1>
+        <p>用于诊断前端到后端的API连接问题</p>
+
+        <div class="test-section">
+            <div class="test-title">1. 基础连接测试</div>
+            <button onclick="testBasicConnection()">测试基础连接</button>
+            <div id="basic-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">2. 健康检查API</div>
+            <button onclick="testHealthAPI()">测试健康检查</button>
+            <div id="health-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">3. 关注列表API（需要认证）</div>
+            <button onclick="testWatchlistAPI()">测试关注列表API</button>
+            <div id="watchlist-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">4. 登录测试</div>
+            <input type="text" id="username" placeholder="用户名" value="testuser">
+            <input type="password" id="password" placeholder="密码" value="testpass123">
+            <button onclick="testLogin()">测试登录</button>
+            <div id="login-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">5. 完整流程测试</div>
+            <button onclick="testFullFlow()">测试完整流程</button>
+            <div id="full-result" class="test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            
+            if (element.textContent === '') {
+                element.textContent = logMessage;
+            } else {
+                element.textContent += logMessage;
+            }
+            
+            element.className = `test-result ${type}`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        async function testBasicConnection() {
+            const resultId = 'basic-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始基础连接测试...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:5000/', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                log(resultId, `✅ 基础连接成功！状态: ${response.status}`, 'success');
+                
+                if (response.ok) {
+                    const text = await response.text();
+                    log(resultId, `响应内容: ${text.substring(0, 200)}...`, 'info');
+                } else {
+                    log(resultId, `⚠️ 响应状态异常: ${response.statusText}`, 'warning');
+                }
+            } catch (error) {
+                log(resultId, `❌ 基础连接失败: ${error.message}`, 'error');
+                log(resultId, `错误类型: ${error.name}`, 'error');
+                log(resultId, `可能原因: 后端服务未启动或端口被占用`, 'error');
+            }
+        }
+
+        async function testHealthAPI() {
+            const resultId = 'health-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始健康检查API测试...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:5000/api/health', {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log(resultId, `API响应状态: ${response.status}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(resultId, `✅ 健康检查成功！`, 'success');
+                    log(resultId, `响应数据: ${JSON.stringify(data, null, 2)}`, 'info');
+                } else {
+                    log(resultId, `❌ 健康检查失败: ${response.status} ${response.statusText}`, 'error');
+                    const text = await response.text();
+                    log(resultId, `错误响应: ${text}`, 'error');
+                }
+            } catch (error) {
+                log(resultId, `❌ 健康检查API失败: ${error.message}`, 'error');
+                log(resultId, `错误类型: ${error.name}`, 'error');
+            }
+        }
+
+        async function testWatchlistAPI() {
+            const resultId = 'watchlist-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始关注列表API测试...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:5000/api/watchlist', {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log(resultId, `API响应状态: ${response.status}`, 'info');
+                
+                if (response.status === 401) {
+                    log(resultId, `✅ 预期的401未授权响应（需要登录）`, 'success');
+                    const data = await response.json();
+                    log(resultId, `响应数据: ${JSON.stringify(data, null, 2)}`, 'info');
+                } else if (response.ok) {
+                    const data = await response.json();
+                    log(resultId, `✅ 关注列表API成功！`, 'success');
+                    log(resultId, `响应数据: ${JSON.stringify(data, null, 2)}`, 'info');
+                } else {
+                    log(resultId, `❌ 关注列表API失败: ${response.status} ${response.statusText}`, 'error');
+                    const text = await response.text();
+                    log(resultId, `错误响应: ${text}`, 'error');
+                }
+            } catch (error) {
+                log(resultId, `❌ 关注列表API失败: ${error.message}`, 'error');
+                log(resultId, `错误类型: ${error.name}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            const resultId = 'login-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始登录测试...', 'info');
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                log(resultId, '❌ 请输入用户名和密码', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                log(resultId, `登录API响应状态: ${response.status}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(resultId, `✅ 登录成功！`, 'success');
+                    log(resultId, `用户信息: ${JSON.stringify(data.data?.user, null, 2)}`, 'info');
+                    
+                    // 保存token用于后续测试
+                    if (data.data?.token) {
+                        window.testToken = data.data.token;
+                        log(resultId, `Token已保存，可用于后续API测试`, 'info');
+                    }
+                } else {
+                    const data = await response.json();
+                    log(resultId, `❌ 登录失败: ${response.status}`, 'error');
+                    log(resultId, `错误信息: ${data.message || data.error}`, 'error');
+                }
+            } catch (error) {
+                log(resultId, `❌ 登录请求失败: ${error.message}`, 'error');
+                log(resultId, `错误类型: ${error.name}`, 'error');
+            }
+        }
+
+        async function testFullFlow() {
+            const resultId = 'full-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始完整流程测试...', 'info');
+
+            // 1. 基础连接
+            log(resultId, '步骤1: 测试基础连接', 'info');
+            try {
+                const basicResponse = await fetch('http://localhost:5000/', { mode: 'cors' });
+                log(resultId, `✅ 基础连接成功: ${basicResponse.status}`, 'success');
+            } catch (error) {
+                log(resultId, `❌ 基础连接失败: ${error.message}`, 'error');
+                return;
+            }
+
+            // 2. 健康检查
+            log(resultId, '步骤2: 测试健康检查API', 'info');
+            try {
+                const healthResponse = await fetch('http://localhost:5000/api/health', { mode: 'cors' });
+                if (healthResponse.ok) {
+                    log(resultId, `✅ 健康检查成功`, 'success');
+                } else {
+                    log(resultId, `❌ 健康检查失败: ${healthResponse.status}`, 'error');
+                    return;
+                }
+            } catch (error) {
+                log(resultId, `❌ 健康检查失败: ${error.message}`, 'error');
+                return;
+            }
+
+            // 3. 登录
+            log(resultId, '步骤3: 测试登录', 'info');
+            const username = document.getElementById('username').value || 'testuser';
+            const password = document.getElementById('password').value || 'testpass123';
+            
+            try {
+                const loginResponse = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (loginResponse.ok) {
+                    const loginData = await loginResponse.json();
+                    log(resultId, `✅ 登录成功`, 'success');
+                    
+                    // 4. 使用token测试关注列表
+                    if (loginData.data?.token) {
+                        log(resultId, '步骤4: 使用token测试关注列表API', 'info');
+                        const watchlistResponse = await fetch('http://localhost:5000/api/watchlist', {
+                            method: 'GET',
+                            mode: 'cors',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${loginData.data.token}`
+                            }
+                        });
+                        
+                        if (watchlistResponse.ok) {
+                            const watchlistData = await watchlistResponse.json();
+                            log(resultId, `✅ 关注列表API成功`, 'success');
+                            log(resultId, `关注列表数量: ${watchlistData.data?.length || 0}`, 'info');
+                        } else {
+                            log(resultId, `❌ 关注列表API失败: ${watchlistResponse.status}`, 'error');
+                        }
+                    }
+                } else {
+                    const loginData = await loginResponse.json();
+                    log(resultId, `❌ 登录失败: ${loginData.message || loginData.error}`, 'error');
+                }
+            } catch (error) {
+                log(resultId, `❌ 登录失败: ${error.message}`, 'error');
+            }
+
+            log(resultId, '完整流程测试完成', 'info');
+        }
+    </script>
+</body>
+</html>

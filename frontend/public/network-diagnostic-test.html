@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络诊断工具测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #389e0d;
+        }
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #cf1322;
+        }
+        .warning {
+            background-color: #fffbe6;
+            border: 1px solid #ffe58f;
+            color: #d48806;
+        }
+        button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        button:disabled {
+            background-color: #d9d9d9;
+            cursor: not-allowed;
+        }
+        .loading {
+            color: #1890ff;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>StockInsight 网络诊断工具测试</h1>
+        <p>这个页面用于测试网络诊断工具的各项功能</p>
+
+        <div class="test-section">
+            <h3>网络诊断测试</h3>
+            <button onclick="runDiagnostic()" id="diagnosticBtn">运行完整诊断</button>
+            <button onclick="testHealthCheck()">测试健康检查</button>
+            <button onclick="testCORS()">测试CORS</button>
+            <button onclick="testAuth()">测试认证接口</button>
+            <button onclick="testWatchlist()">测试关注列表</button>
+            <div id="diagnosticResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>网络环境信息</h3>
+            <div id="networkInfo"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>诊断报告</h3>
+            <button onclick="generateReport()" id="reportBtn" disabled>生成报告</button>
+            <div id="reportContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // 网络诊断工具的简化版本
+        class NetworkDiagnostic {
+            static BACKEND_URL = 'http://localhost:5000';
+            static API_URL = 'http://localhost:5000/api';
+
+            static async testBackendConnection() {
+                const startTime = Date.now();
+                try {
+                    const response = await fetch(this.BACKEND_URL, {
+                        method: 'GET',
+                        mode: 'no-cors',
+                        signal: AbortSignal.timeout(5000)
+                    });
+                    const duration = Date.now() - startTime;
+                    return {
+                        test: '后端基础连接',
+                        success: true,
+                        message: `后端服务器响应正常 (${duration}ms)`,
+                        duration
+                    };
+                } catch (error) {
+                    const duration = Date.now() - startTime;
+                    return {
+                        test: '后端基础连接',
+                        success: false,
+                        message: `无法连接到后端服务器: ${error.message}`,
+                        details: { error: error.message, code: error.code },
+                        duration
+                    };
+                }
+            }
+
+            static async testHealthCheck() {
+                const startTime = Date.now();
+                try {
+                    const response = await fetch(`${this.API_URL}/health`, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        signal: AbortSignal.timeout(10000)
+                    });
+                    const duration = Date.now() - startTime;
+                    if (response.ok) {
+                        const data = await response.json();
+                        return {
+                            test: '健康检查接口',
+                            success: true,
+                            message: `健康检查通过 (${duration}ms)`,
+                            details: data,
+                            duration
+                        };
+                    } else {
+                        return {
+                            test: '健康检查接口',
+                            success: false,
+                            message: `健康检查失败: HTTP ${response.status}`,
+                            details: { status: response.status, statusText: response.statusText },
+                            duration
+                        };
+                    }
+                } catch (error) {
+                    const duration = Date.now() - startTime;
+                    return {
+                        test: '健康检查接口',
+                        success: false,
+                        message: `健康检查请求失败: ${error.message}`,
+                        details: { error: error.message, code: error.code },
+                        duration
+                    };
+                }
+            }
+
+            static async testCORS() {
+                const startTime = Date.now();
+                try {
+                    const response = await fetch(`${this.API_URL}/health`, {
+                        method: 'OPTIONS',
+                        mode: 'cors',
+                        headers: {
+                            'Origin': window.location.origin,
+                            'Access-Control-Request-Method': 'GET',
+                            'Access-Control-Request-Headers': 'Content-Type,Authorization'
+                        },
+                        signal: AbortSignal.timeout(5000)
+                    });
+                    const duration = Date.now() - startTime;
+                    if (response.ok) {
+                        const corsHeaders = {
+                            'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                            'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                            'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                        };
+                        return {
+                            test: 'CORS配置',
+                            success: true,
+                            message: `CORS配置正确 (${duration}ms)`,
+                            details: corsHeaders,
+                            duration
+                        };
+                    } else {
+                        return {
+                            test: 'CORS配置',
+                            success: false,
+                            message: `CORS预检请求失败: HTTP ${response.status}`,
+                            details: { status: response.status },
+                            duration
+                        };
+                    }
+                } catch (error) {
+                    const duration = Date.now() - startTime;
+                    return {
+                        test: 'CORS配置',
+                        success: false,
+                        message: `CORS测试失败: ${error.message}`,
+                        details: { error: error.message },
+                        duration
+                    };
+                }
+            }
+
+            static async testAuthAPI() {
+                const startTime = Date.now();
+                try {
+                    const response = await fetch(`${this.API_URL}/auth/login`, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: 'test', password: 'test' }),
+                        signal: AbortSignal.timeout(10000)
+                    });
+                    const duration = Date.now() - startTime;
+                    const data = await response.json();
+                    if (response.status === 400 || response.status === 401) {
+                        return {
+                            test: '认证接口',
+                            success: true,
+                            message: `认证接口可达 (${duration}ms)`,
+                            details: { status: response.status, message: data.message },
+                            duration
+                        };
+                    } else {
+                        return {
+                            test: '认证接口',
+                            success: false,
+                            message: `认证接口异常响应: HTTP ${response.status}`,
+                            details: { status: response.status, data },
+                            duration
+                        };
+                    }
+                } catch (error) {
+                    const duration = Date.now() - startTime;
+                    return {
+                        test: '认证接口',
+                        success: false,
+                        message: `认证接口请求失败: ${error.message}`,
+                        details: { error: error.message },
+                        duration
+                    };
+                }
+            }
+
+            static async testWatchlistNoToken() {
+                const startTime = Date.now();
+                try {
+                    const response = await fetch(`${this.API_URL}/watchlist`, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        signal: AbortSignal.timeout(10000)
+                    });
+                    const duration = Date.now() - startTime;
+                    const data = await response.json();
+                    if (response.status === 401) {
+                        return {
+                            test: '关注列表接口',
+                            success: true,
+                            message: `关注列表接口可达，正确返回401未授权 (${duration}ms)`,
+                            details: { status: response.status, message: data.message },
+                            duration
+                        };
+                    } else {
+                        return {
+                            test: '关注列表接口',
+                            success: false,
+                            message: `关注列表接口异常响应: HTTP ${response.status}`,
+                            details: { status: response.status, data },
+                            duration
+                        };
+                    }
+                } catch (error) {
+                    const duration = Date.now() - startTime;
+                    return {
+                        test: '关注列表接口',
+                        success: false,
+                        message: `关注列表接口请求失败: ${error.message}`,
+                        details: { error: error.message, code: error.code },
+                        duration
+                    };
+                }
+            }
+
+            static async runFullDiagnostic() {
+                const results = [];
+                results.push(await this.testBackendConnection());
+                results.push(await this.testHealthCheck());
+                results.push(await this.testCORS());
+                results.push(await this.testAuthAPI());
+                results.push(await this.testWatchlistNoToken());
+                return results;
+            }
+
+            static getNetworkInfo() {
+                return {
+                    userAgent: navigator.userAgent,
+                    onLine: navigator.onLine,
+                    connection: navigator.connection ? {
+                        effectiveType: navigator.connection.effectiveType,
+                        downlink: navigator.connection.downlink,
+                        rtt: navigator.connection.rtt
+                    } : null,
+                    location: {
+                        origin: window.location.origin,
+                        hostname: window.location.hostname,
+                        port: window.location.port,
+                        protocol: window.location.protocol
+                    }
+                };
+            }
+        }
+
+        let diagnosticResults = [];
+
+        // 显示网络环境信息
+        function showNetworkInfo() {
+            const info = NetworkDiagnostic.getNetworkInfo();
+            const container = document.getElementById('networkInfo');
+            container.innerHTML = `<pre>${JSON.stringify(info, null, 2)}</pre>`;
+        }
+
+        // 显示测试结果
+        function displayResult(result) {
+            const container = document.getElementById('diagnosticResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result.success ? 'success' : 'error'}`;
+            
+            let html = `
+                <strong>${result.success ? '✅' : '❌'} ${result.test}</strong>
+                <div>结果: ${result.message}</div>
+            `;
+            
+            if (result.duration) {
+                html += `<div>耗时: ${result.duration}ms</div>`;
+            }
+            
+            if (result.details) {
+                html += `<div>详情: <pre>${JSON.stringify(result.details, null, 2)}</pre></div>`;
+            }
+            
+            resultDiv.innerHTML = html;
+            container.appendChild(resultDiv);
+        }
+
+        // 运行完整诊断
+        async function runDiagnostic() {
+            const btn = document.getElementById('diagnosticBtn');
+            const container = document.getElementById('diagnosticResults');
+            
+            btn.disabled = true;
+            btn.textContent = '诊断中...';
+            container.innerHTML = '<div class="loading">正在进行网络诊断，请稍候...</div>';
+            
+            try {
+                diagnosticResults = await NetworkDiagnostic.runFullDiagnostic();
+                container.innerHTML = '';
+                
+                diagnosticResults.forEach(result => {
+                    displayResult(result);
+                });
+                
+                const failedTests = diagnosticResults.filter(r => !r.success);
+                const summary = document.createElement('div');
+                summary.className = `test-result ${failedTests.length === 0 ? 'success' : 'warning'}`;
+                summary.innerHTML = `
+                    <strong>诊断完成</strong>
+                    <div>共进行了 ${diagnosticResults.length} 项测试，${diagnosticResults.filter(r => r.success).length} 项通过，${failedTests.length} 项失败</div>
+                `;
+                container.insertBefore(summary, container.firstChild);
+                
+                document.getElementById('reportBtn').disabled = false;
+            } catch (error) {
+                container.innerHTML = `<div class="error">诊断失败: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '运行完整诊断';
+            }
+        }
+
+        // 单独测试函数
+        async function testHealthCheck() {
+            const result = await NetworkDiagnostic.testHealthCheck();
+            displayResult(result);
+        }
+
+        async function testCORS() {
+            const result = await NetworkDiagnostic.testCORS();
+            displayResult(result);
+        }
+
+        async function testAuth() {
+            const result = await NetworkDiagnostic.testAuthAPI();
+            displayResult(result);
+        }
+
+        async function testWatchlist() {
+            const result = await NetworkDiagnostic.testWatchlistNoToken();
+            displayResult(result);
+        }
+
+        // 生成报告
+        function generateReport() {
+            if (diagnosticResults.length === 0) {
+                alert('请先运行诊断');
+                return;
+            }
+
+            const networkInfo = NetworkDiagnostic.getNetworkInfo();
+            const timestamp = new Date().toISOString();
+            
+            let report = `# StockInsight 网络诊断报告\n\n`;
+            report += `**生成时间**: ${timestamp}\n\n`;
+            
+            report += `## 网络环境信息\n`;
+            report += `- **在线状态**: ${networkInfo.onLine ? '在线' : '离线'}\n`;
+            report += `- **当前地址**: ${networkInfo.location.origin}\n`;
+            report += `- **协议**: ${networkInfo.location.protocol}\n`;
+            if (networkInfo.connection) {
+                report += `- **连接类型**: ${networkInfo.connection.effectiveType}\n`;
+                report += `- **下行速度**: ${networkInfo.connection.downlink} Mbps\n`;
+                report += `- **延迟**: ${networkInfo.connection.rtt} ms\n`;
+            }
+            report += `\n`;
+            
+            report += `## 诊断结果\n\n`;
+            
+            diagnosticResults.forEach((result, index) => {
+                const status = result.success ? '✅ 通过' : '❌ 失败';
+                report += `### ${index + 1}. ${result.test} - ${status}\n`;
+                report += `**消息**: ${result.message}\n`;
+                if (result.duration) {
+                    report += `**耗时**: ${result.duration}ms\n`;
+                }
+                if (result.details) {
+                    report += `**详情**: \`${JSON.stringify(result.details, null, 2)}\`\n`;
+                }
+                report += `\n`;
+            });
+
+            // 下载报告
+            const blob = new Blob([report], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `network-diagnostic-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('诊断报告已下载');
+        }
+
+        // 页面加载时显示网络信息
+        window.onload = function() {
+            showNetworkInfo();
+        };
+    </script>
+</body>
+</html>

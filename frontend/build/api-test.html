@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API连接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1d29;
+            color: #ffffff;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #3a3d4a;
+        }
+        .success {
+            background-color: #1a2d1a;
+            border-color: #2d4a2d;
+        }
+        .error {
+            background-color: #2d1a1a;
+            border-color: #4a2d2d;
+        }
+        button {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #5a6fd8;
+        }
+        pre {
+            background-color: #2a2d3a;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>API连接测试</h1>
+    
+    <button onclick="testHealthCheck()">测试健康检查</button>
+    <button onclick="testWatchlist()">测试关注列表</button>
+    <button onclick="clearResults()">清空结果</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function addResult(title, success, data) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${success ? 'success' : 'error'}`;
+            resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testHealthCheck() {
+            try {
+                console.log('开始测试健康检查...');
+                const response = await fetch('http://localhost:5000/api/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                
+                const data = await response.json();
+                console.log('健康检查响应:', data);
+                addResult('健康检查', response.ok, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data
+                });
+            } catch (error) {
+                console.error('健康检查失败:', error);
+                addResult('健康检查', false, {
+                    error: error.message,
+                    stack: error.stack
+                });
+            }
+        }
+
+        async function testWatchlist() {
+            try {
+                console.log('开始测试关注列表...');
+                const response = await fetch('http://localhost:5000/api/watchlist', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                
+                const data = await response.json();
+                console.log('关注列表响应:', data);
+                addResult('关注列表', response.ok, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data
+                });
+            } catch (error) {
+                console.error('关注列表测试失败:', error);
+                addResult('关注列表', false, {
+                    error: error.message,
+                    stack: error.stack
+                });
+            }
+        }
+
+        // 页面加载时自动测试
+        window.onload = function() {
+            console.log('页面加载完成，开始自动测试...');
+            setTimeout(testHealthCheck, 1000);
+        };
+    </script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Row, Col, Tooltip } from 'antd';
+import { Row, Col } from 'antd';
 import { StockInfo } from '../services/api';
 import { calculateStats, formatPercent, getPriceColor } from '../utils/helpers';
+import StatCard from './StatCard';
 
 interface StatsCardsProps {
   stocks: StockInfo[];
@@ -51,6 +52,8 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stocks, loading = false }) => {
     }
   };
 
+  type TrendType = 'up' | 'down' | 'neutral';
+
   const cards = [
     {
       title: '关注股票总数',
@@ -58,7 +61,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stocks, loading = false }) => {
       iconClass: 'icon-chart',
       value: stats.totalCount,
       subtitle: `↑涨${stats.risingCount} ↓跌${stats.fallingCount} →平${stats.flatCount}`,
-      trend: 'neutral',
+      trend: 'neutral' as TrendType,
       tooltipType: 'total'
     },
     {
@@ -67,7 +70,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stocks, loading = false }) => {
       iconClass: 'icon-trend',
       value: formatPercent(stats.avgChangePercent),
       subtitle: '今日整体表现',
-      trend: stats.avgChangePercent > 0 ? 'up' : stats.avgChangePercent < 0 ? 'down' : 'neutral',
+      trend: (stats.avgChangePercent > 0 ? 'up' : stats.avgChangePercent < 0 ? 'down' : 'neutral') as TrendType,
       color: getPriceColor(stats.avgChangePercent),
       tooltipType: 'average'
     },
@@ -77,7 +80,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stocks, loading = false }) => {
       iconClass: 'icon-star',
       value: stats.strongStocks,
       subtitle: '涨幅 > 5%',
-      trend: stats.strongStocks > 0 ? 'up' : 'neutral',
+      trend: (stats.strongStocks > 0 ? 'up' : 'neutral') as TrendType,
       tooltipType: 'strong'
     },
     {
@@ -86,61 +89,29 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stocks, loading = false }) => {
       iconClass: 'icon-bell',
       value: stats.lastUpdate,
       subtitle: new Date().toLocaleDateString('zh-CN'),
-      trend: 'neutral'
+      trend: 'neutral' as TrendType
     }
   ];
 
   return (
     <Row gutter={[20, 20]} style={{ marginBottom: 32 }}>
-      {cards.map((card, index) => {
-        const CardContent = (
-          <div className={`stat-card fade-in`} style={{ animationDelay: `${index * 0.1}s` }}>
-            <div className="stat-header">
-              <span className="stat-title">{card.title}</span>
-              <div className={`stat-icon ${card.iconClass}`}>
-                {card.icon}
-              </div>
-            </div>
-            <div 
-              className="stat-number"
-              style={{ 
-                color: card.color || '#ffffff'
-              }}
-            >
-              {loading ? '--' : card.value}
-            </div>
-            <div className={`stat-subtitle ${
-              card.trend === 'up' ? 'positive' : 
-              card.trend === 'down' ? 'negative' : 'neutral'
-            }`}>
-              {loading ? '加载中...' : (
-                <>
-                  {card.trend === 'up' && '↗ '}
-                  {card.trend === 'down' && '↘ '}
-                  {card.trend === 'neutral' && '📅 '}
-                  {card.subtitle}
-                </>
-              )}
-            </div>
+      {cards.map((card, index) => (
+        <Col xs={12} sm={12} md={6} lg={6} xl={6} key={index}>
+          <div style={{ animationDelay: `${index * 0.1}s` }}>
+            <StatCard
+              title={card.title}
+              icon={card.icon}
+              iconClass={card.iconClass}
+              value={card.value}
+              subtitle={card.subtitle}
+              trend={card.trend}
+              color={card.color}
+              tooltipTitle={card.tooltipType ? getTooltipContent(card.tooltipType) : undefined}
+              loading={loading}
+            />
           </div>
-        );
-
-        return (
-          <Col xs={12} sm={12} md={6} lg={6} xl={6} key={index}>
-            {card.tooltipType ? (
-              <Tooltip 
-                title={getTooltipContent(card.tooltipType)} 
-                placement="top"
-                overlayStyle={{ maxWidth: '300px' }}
-              >
-                {CardContent}
-              </Tooltip>
-            ) : (
-              CardContent
-            )}
-          </Col>
-        );
-      })}
+        </Col>
+      ))}
     </Row>
   );
 };

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API连接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #389e0d;
+        }
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #cf1322;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API连接测试</h1>
+        <p>测试前端是否能正确连接到后端API</p>
+        
+        <button onclick="testDirectAPI()">测试直连后端API</button>
+        <button onclick="testProxyAPI()">测试代理API</button>
+        <button onclick="testWatchlist()">测试关注列表API</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, isSuccess = true) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+            resultDiv.textContent = message;
+            console.log(message);
+        }
+
+        async function testDirectAPI() {
+            try {
+                console.log('开始测试直连后端API...');
+                const response = await fetch('http://localhost:5000/api/health');
+                const data = await response.json();
+                showResult(`直连API测试成功:\n${JSON.stringify(data, null, 2)}`, true);
+            } catch (error) {
+                console.error('直连API测试失败:', error);
+                showResult(`直连API测试失败:\n${error.message}`, false);
+            }
+        }
+
+        async function testProxyAPI() {
+            try {
+                console.log('开始测试代理API...');
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                showResult(`代理API测试成功:\n${JSON.stringify(data, null, 2)}`, true);
+            } catch (error) {
+                console.error('代理API测试失败:', error);
+                showResult(`代理API测试失败:\n${error.message}`, false);
+            }
+        }
+
+        async function testWatchlist() {
+            try {
+                console.log('开始测试关注列表API...');
+                const response = await fetch('http://localhost:5000/api/watchlist');
+                const data = await response.json();
+                showResult(`关注列表API测试成功:\n${JSON.stringify(data, null, 2)}`, true);
+            } catch (error) {
+                console.error('关注列表API测试失败:', error);
+                showResult(`关注列表API测试失败:\n${error.message}`, false);
+            }
+        }
+
+        // 页面加载时自动测试
+        window.onload = function() {
+            console.log('页面加载完成，开始自动测试...');
+            showResult('页面加载完成，点击按钮开始测试API连接', true);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #1890ff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>登录API测试</h1>
+        
+        <div class="form-group">
+            <label for="username">用户名:</label>
+            <input type="text" id="username" value="admin">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">密码:</label>
+            <input type="password" id="password" value="admin123">
+        </div>
+        
+        <button onclick="testLogin()">测试登录</button>
+        <button onclick="testVerify()">验证令牌</button>
+        <button onclick="clearToken()">清除令牌</button>
+        <button onclick="checkToken()">检查令牌</button>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api/auth';
+        
+        function showResult(message, isSuccess = true) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+            resultDiv.style.display = 'block';
+        }
+        
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.token) {
+                    localStorage.setItem('auth_token', data.data.token);
+                    showResult(`登录成功！\n令牌: ${data.data.token.substring(0, 50)}...\n用户: ${JSON.stringify(data.data.user, null, 2)}`, true);
+                } else {
+                    showResult(`登录失败: ${data.message || '未知错误'}`, false);
+                }
+            } catch (error) {
+                showResult(`请求失败: ${error.message}`, false);
+            }
+        }
+        
+        async function testVerify() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                showResult('没有找到令牌，请先登录', false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/verify`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`令牌验证成功！\n用户信息: ${JSON.stringify(data.data.user, null, 2)}`, true);
+                } else {
+                    showResult(`令牌验证失败: ${data.message || '未知错误'}`, false);
+                }
+            } catch (error) {
+                showResult(`验证请求失败: ${error.message}`, false);
+            }
+        }
+        
+        function clearToken() {
+            localStorage.removeItem('auth_token');
+            showResult('令牌已清除', true);
+        }
+        
+        function checkToken() {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                showResult(`当前令牌: ${token}`, true);
+            } else {
+                showResult('没有找到令牌', false);
+            }
+        }
+    </script>
+</body>
+</html>

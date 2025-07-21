@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>缓存功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1d29;
+            color: #ffffff;
+        }
+        .test-section {
+            background: #2a2d3a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #3a3d4a;
+        }
+        .result {
+            background: #222530;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5a6fd8;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <h1>股票数据缓存功能测试</h1>
+    
+    <div class="test-section">
+        <h2>1. 检查 localStorage 中的缓存数据</h2>
+        <button onclick="checkLocalStorage()">检查缓存</button>
+        <div id="localStorage-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 模拟缓存操作</h2>
+        <button onclick="setCacheData()">设置测试缓存</button>
+        <button onclick="getCacheData()">读取测试缓存</button>
+        <button onclick="clearCacheData()">清除测试缓存</button>
+        <div id="cache-operation-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 检查控制台日志</h2>
+        <p>请打开浏览器开发者工具的 Console 标签，查看是否有以下日志：</p>
+        <ul>
+            <li><span class="success">"使用缓存的关注列表数据"</span> - 表示缓存正常工作</li>
+            <li><span class="warning">"缓存中无数据，从API获取..."</span> - 表示没有缓存数据</li>
+            <li><span class="error">任何错误信息</span> - 表示缓存功能异常</li>
+        </ul>
+        <button onclick="window.location.href='http://localhost:3000'">返回主应用</button>
+    </div>
+
+    <script>
+        // 模拟 stockCache 的基本功能
+        const CACHE_PREFIX = 'stock_cache_';
+        
+        function checkLocalStorage() {
+            const result = document.getElementById('localStorage-result');
+            const keys = Object.keys(localStorage);
+            const stockCacheKeys = keys.filter(key => key.startsWith(CACHE_PREFIX));
+            
+            let output = `总共找到 ${stockCacheKeys.length} 个股票缓存项：\n\n`;
+            
+            if (stockCacheKeys.length === 0) {
+                output += '❌ 没有找到任何股票缓存数据\n';
+                output += '这可能是因为：\n';
+                output += '1. 页面还没有加载过数据\n';
+                output += '2. 缓存已过期被清除\n';
+                output += '3. 缓存功能存在问题\n';
+            } else {
+                stockCacheKeys.forEach(key => {
+                    try {
+                        const value = localStorage.getItem(key);
+                        const parsed = JSON.parse(value);
+                        const isExpired = Date.now() > parsed.expireTime;
+                        const age = Math.round((Date.now() - parsed.timestamp) / 1000 / 60);
+                        
+                        output += `✅ ${key}:\n`;
+                        output += `   数据时间: ${new Date(parsed.timestamp).toLocaleString()}\n`;
+                        output += `   过期时间: ${new Date(parsed.expireTime).toLocaleString()}\n`;
+                        output += `   数据年龄: ${age} 分钟\n`;
+                        output += `   状态: ${isExpired ? '❌ 已过期' : '✅ 有效'}\n`;
+                        
+                        if (parsed.data && Array.isArray(parsed.data)) {
+                            output += `   数据条数: ${parsed.data.length}\n`;
+                        }
+                        output += '\n';
+                    } catch (e) {
+                        output += `❌ ${key}: 解析失败 - ${e.message}\n`;
+                    }
+                });
+            }
+            
+            result.textContent = output;
+        }
+        
+        function setCacheData() {
+            const result = document.getElementById('cache-operation-result');
+            try {
+                const testData = {
+                    data: [{ code: '000001', name: '测试股票', price: 10.00 }],
+                    timestamp: Date.now(),
+                    expireTime: Date.now() + 5 * 60 * 1000 // 5分钟后过期
+                };
+                
+                localStorage.setItem(CACHE_PREFIX + 'test', JSON.stringify(testData));
+                result.textContent = '✅ 测试缓存数据已设置';
+                result.className = 'result success';
+            } catch (e) {
+                result.textContent = `❌ 设置缓存失败: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+        
+        function getCacheData() {
+            const result = document.getElementById('cache-operation-result');
+            try {
+                const cached = localStorage.getItem(CACHE_PREFIX + 'test');
+                if (!cached) {
+                    result.textContent = '❌ 没有找到测试缓存数据';
+                    result.className = 'result error';
+                    return;
+                }
+                
+                const parsed = JSON.parse(cached);
+                const isExpired = Date.now() > parsed.expireTime;
+                
+                let output = '✅ 测试缓存数据读取成功:\n';
+                output += `数据: ${JSON.stringify(parsed.data, null, 2)}\n`;
+                output += `时间戳: ${new Date(parsed.timestamp).toLocaleString()}\n`;
+                output += `状态: ${isExpired ? '已过期' : '有效'}`;
+                
+                result.textContent = output;
+                result.className = 'result success';
+            } catch (e) {
+                result.textContent = `❌ 读取缓存失败: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+        
+        function clearCacheData() {
+            const result = document.getElementById('cache-operation-result');
+            try {
+                localStorage.removeItem(CACHE_PREFIX + 'test');
+                result.textContent = '✅ 测试缓存数据已清除';
+                result.className = 'result success';
+            } catch (e) {
+                result.textContent = `❌ 清除缓存失败: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+        
+        // 页面加载时自动检查
+        window.onload = function() {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>

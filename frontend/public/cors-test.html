@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS连接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .test-result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .test-result.info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .config-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CORS连接测试工具</h1>
+        <p>测试前端到后端的CORS配置和API连接</p>
+
+        <div class="config-info">
+            <h3>当前配置信息</h3>
+            <div id="config-info">正在加载配置...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">1. 预检请求测试 (OPTIONS)</div>
+            <button onclick="testPreflight()">测试预检请求</button>
+            <div id="preflight-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">2. 简单GET请求测试</div>
+            <button onclick="testSimpleGet()">测试GET请求</button>
+            <div id="simple-get-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">3. 带自定义头的请求测试</div>
+            <button onclick="testCustomHeaders()">测试自定义头请求</button>
+            <div id="custom-headers-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">4. POST请求测试</div>
+            <button onclick="testPost()">测试POST请求</button>
+            <div id="post-result" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">5. 网络诊断</div>
+            <button onclick="runNetworkDiagnostic()">运行网络诊断</button>
+            <div id="diagnostic-result" class="test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置
+        const API_BASE_URL = 'http://localhost:5000';
+        const FRONTEND_URL = window.location.origin;
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            
+            if (element.textContent === '') {
+                element.textContent = logMessage;
+            } else {
+                element.textContent += logMessage;
+            }
+            
+            element.className = `test-result ${type}`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        // 显示配置信息
+        function showConfigInfo() {
+            const configElement = document.getElementById('config-info');
+            configElement.innerHTML = `
+                <strong>前端地址:</strong> ${FRONTEND_URL}<br>
+                <strong>后端地址:</strong> ${API_BASE_URL}<br>
+                <strong>用户代理:</strong> ${navigator.userAgent}<br>
+                <strong>当前时间:</strong> ${new Date().toISOString()}
+            `;
+        }
+
+        // 测试预检请求
+        async function testPreflight() {
+            const resultId = 'preflight-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始预检请求测试...', 'info');
+
+            try {
+                // 手动发送OPTIONS请求
+                const response = await fetch(`${API_BASE_URL}/api/health`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': FRONTEND_URL,
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'Content-Type,Authorization'
+                    }
+                });
+
+                log(resultId, `预检请求状态: ${response.status}`, 'info');
+                
+                // 检查CORS头
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers'),
+                    'Access-Control-Max-Age': response.headers.get('Access-Control-Max-Age')
+                };
+
+                log(resultId, `CORS响应头:`, 'info');
+                Object.entries(corsHeaders).forEach(([key, value]) => {
+                    log(resultId, `  ${key}: ${value || '未设置'}`, 'info');
+                });
+
+                if (response.status === 200 || response.status === 204) {
+                    log(resultId, `✅ 预检请求成功！`, 'success');
+                } else {
+                    log(resultId, `❌ 预检请求失败: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(resultId, `❌ 预检请求异常: ${error.message}`, 'error');
+                log(resultId, `错误详情: ${error.stack}`, 'error');
+            }
+        }
+
+        // 测试简单GET请求
+        async function testSimpleGet() {
+            const resultId = 'simple-get-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始简单GET请求测试...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                log(resultId, `请求状态: ${response.status}`, 'info');
+                log(resultId, `响应头:`, 'info');
+                
+                response.headers.forEach((value, key) => {
+                    log(resultId, `  ${key}: ${value}`, 'info');
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log(resultId, `✅ GET请求成功！`, 'success');
+                    log(resultId, `响应数据: ${JSON.stringify(data, null, 2)}`, 'info');
+                } else {
+                    log(resultId, `❌ GET请求失败: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(resultId, `❌ GET请求异常: ${error.message}`, 'error');
+                log(resultId, `错误类型: ${error.name}`, 'error');
+            }
+        }
+
+        // 测试带自定义头的请求
+        async function testCustomHeaders() {
+            const resultId = 'custom-headers-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始自定义头请求测试...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-Custom-Header': 'test-value'
+                    }
+                });
+
+                log(resultId, `请求状态: ${response.status}`, 'info');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log(resultId, `✅ 自定义头请求成功！`, 'success');
+                    log(resultId, `响应数据: ${JSON.stringify(data, null, 2)}`, 'info');
+                } else {
+                    log(resultId, `❌ 自定义头请求失败: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(resultId, `❌ 自定义头请求异常: ${error.message}`, 'error');
+                log(resultId, `错误类型: ${error.name}`, 'error');
+            }
+        }
+
+        // 测试POST请求
+        async function testPost() {
+            const resultId = 'post-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始POST请求测试...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+
+                log(resultId, `POST请求状态: ${response.status}`, 'info');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log(resultId, `✅ POST请求成功！`, 'success');
+                    log(resultId, `响应数据: ${JSON.stringify(data, null, 2)}`, 'info');
+                } else {
+                    const data = await response.json();
+                    log(resultId, `❌ POST请求失败: ${response.status}`, 'error');
+                    log(resultId, `错误信息: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                log(resultId, `❌ POST请求异常: ${error.message}`, 'error');
+                log(resultId, `错误类型: ${error.name}`, 'error');
+            }
+        }
+
+        // 网络诊断
+        async function runNetworkDiagnostic() {
+            const resultId = 'diagnostic-result';
+            document.getElementById(resultId).textContent = '';
+            log(resultId, '开始网络诊断...', 'info');
+
+            // 1. 检查后端服务是否可达
+            log(resultId, '1. 检查后端服务可达性...', 'info');
+            try {
+                const startTime = performance.now();
+                const response = await fetch(`${API_BASE_URL}/`, {
+                    method: 'GET',
+                    mode: 'no-cors'  // 绕过CORS检查
+                });
+                const endTime = performance.now();
+                log(resultId, `✅ 后端服务可达，响应时间: ${(endTime - startTime).toFixed(2)}ms`, 'success');
+            } catch (error) {
+                log(resultId, `❌ 后端服务不可达: ${error.message}`, 'error');
+                return;
+            }
+
+            // 2. 检查DNS解析
+            log(resultId, '2. 检查DNS解析...', 'info');
+            try {
+                const url = new URL(API_BASE_URL);
+                log(resultId, `✅ DNS解析正常: ${url.hostname}`, 'success');
+            } catch (error) {
+                log(resultId, `❌ DNS解析失败: ${error.message}`, 'error');
+            }
+
+            // 3. 检查浏览器CORS支持
+            log(resultId, '3. 检查浏览器CORS支持...', 'info');
+            if (typeof fetch !== 'undefined') {
+                log(resultId, `✅ 浏览器支持fetch API`, 'success');
+            } else {
+                log(resultId, `❌ 浏览器不支持fetch API`, 'error');
+            }
+
+            // 4. 检查网络连接
+            log(resultId, '4. 检查网络连接状态...', 'info');
+            if (navigator.onLine) {
+                log(resultId, `✅ 网络连接正常`, 'success');
+            } else {
+                log(resultId, `❌ 网络连接异常`, 'error');
+            }
+
+            log(resultId, '网络诊断完成！', 'info');
+        }
+
+        // 页面加载时显示配置信息
+        window.onload = function() {
+            showConfigInfo();
+        };
+    </script>
+</body>
+</html>
