@@ -319,7 +319,8 @@ const SearchBox: React.FC<SearchBoxProps> = ({
       }
     } catch (error) {
       console.error('添加热门股票失败:', error);
-      message.error(handleApiError(error));
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      message.error(handleApiError(errorMessage));
     } finally {
       setLoading(false);
     }
@@ -401,8 +402,8 @@ const SearchBox: React.FC<SearchBoxProps> = ({
       }
     } catch (error) {
       console.error('搜索失败:', error);
-      const errorMessage = handleApiError(error);
-      message.error(`搜索失败: ${errorMessage}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      message.error(`搜索失败: ${handleApiError(errorMessage)}`);
       setOptions([]);
     } finally {
       setLoading(false);
